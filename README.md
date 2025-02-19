@@ -6,4 +6,14 @@ Proyecto 1: Sistema de Gestión de Documentos con NaaS (ECM/NaaS).
 Proyecto 2: Sistema Interno de Gestión de Operaciones y Colaboración (ERP/PMS).
 
 
-Scrum master Emmanuel Campos Geanro
+Scrum master Emmanuel Campos Genaro
+
+DEV SEC OPS 
+DEV BACK
+
+DEV FRONT
+DEF FRONT
+
+TESTER
+
+UTVT

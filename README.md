@@ -8,7 +8,7 @@ Proyecto 2: Sistema Interno de Gestión de Operaciones y Colaboración (ERP/PMS)
 
 Scrum master Emmanuel Campos Genaro
 
-DEV SEC OPS 
+DEV SEC OPS Edgar Ivan Quiroz Calderon  
 DEV BACK
 
 DEV FRONT

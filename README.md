@@ -62,7 +62,7 @@ Bienvenido al repositorio del **Prototipo ERP NaaS**, un sistema diseñado para 
 👨‍💻 **Frontend Developer 1**  
 Flor Araceli Flores Aguilar 
 👨‍💻 **Frontend Developer 2**  
-Nancy Chavez Salguero
+
 ---
 
 ### 🛠 **Testing & QA**
@@ -72,7 +72,7 @@ Nancy Chavez Salguero
 
 👨‍💻 **QA Tester (UTVT)**  
 
----
+---Maria de los Angeles Ambrocio Alcantara 
 
 ## 🏗 **Flujo de Desarrollo con Git**
 ### 🔹 **Modelo de Ramas (GitFlow)**

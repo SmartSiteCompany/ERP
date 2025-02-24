@@ -9,12 +9,14 @@ const generateAccessToken = (user) => {
 };
 
 const generateRefreshToken = async (user) => {
+    await RefreshToken.deleteMany({ userId: user._id }); // Eliminar tokens anteriores
     const refreshToken = jwt.sign({ userId: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
     await RefreshToken.create({ userId: user._id, token: refreshToken, expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) });
     return refreshToken;
 };
 
 exports.register = async ({ username, password, role }) => {
+    if (await User.findOne({ username })) throw new Error('El usuario ya existe');
     const user = new User({ username, password, role });
     return await user.save();
 };
@@ -47,12 +49,20 @@ exports.logout = async (token) => {
 const Task = require('../models/Task');
 
 const createTask = async (data) => {
-  const task = new Task(data);
-  return await task.save();
+  try {
+    const task = new Task(data);
+    return await task.save();
+  } catch (error) {
+    throw new Error('Error al crear la tarea');
+  }
 };
 
 const getTasks = async () => {
-  return await Task.find().populate('assignedTo');
+  try {
+    return await Task.find().populate('assignedTo');
+  } catch (error) {
+    throw new Error('Error al obtener las tareas');
+  }
 };
 
 module.exports = { createTask, getTasks };

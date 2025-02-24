@@ -1,16 +1,24 @@
-// config/database
+// config/database.js
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+    await mongoose.connect(process.env.MONGO_URI);
+
+    console.log(`✅ MongoDB conectado en: ${mongoose.connection.host}`);
+
+    // Listeners para eventos de conexión
+    mongoose.connection.on('disconnected', () => {
+      console.warn('⚠️ Conexión a MongoDB perdida. Intentando reconectar...');
     });
-    console.log(`MongoDB conectado: ${conn.connection.host}`);
+
+    mongoose.connection.on('error', (error) => {
+      console.error(`❌ Error en la conexión a MongoDB: ${error.message}`);
+    });
+
   } catch (error) {
-    console.error(`❌ Error conectando a MongoDB: ${error}`);
-    process.exit(1); 
+    console.error(`❌ Error conectando a MongoDB: ${error.message}`);
+    process.exit(1);
   }
 };
 

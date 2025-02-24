@@ -23,6 +23,5 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.1"
   },
-  "devDependencies": {},
-  "description": ""
+  "description": "MONGO_URI=mongodb://localhost:27017/erp_db\r ACCESS_TOKEN_SECRET=test_secret\r REFRESH_TOKEN_SECRET=test_refresh_secret\r PORT=4000"
 }

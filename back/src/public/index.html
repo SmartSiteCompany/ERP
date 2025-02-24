@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP Ligero</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        #app { max-width: 400px; margin: auto; }
+        input, button { display: block; width: 100%; margin: 10px 0; padding: 10px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h2>ERP - Login</h2>
+        <div id="login-form">
+            <input type="text" id="username" placeholder="Usuario">
+            <input type="password" id="password" placeholder="Contraseña">
+            <button onclick="login()">Iniciar sesión</button>
+            <button onclick="goToRegister()">Registrarse</button>
+        </div>
+        <div id="dashboard" class="hidden">
+            <h2>Bienvenido</h2>
+            <button onclick="logout()">Cerrar sesión</button>
+            <h3>Crear Tarea</h3>
+            <input type="text" id="taskTitle" placeholder="Título">
+            <button onclick="createTask()">Crear Tarea</button>
+            <h3>Lista de Tareas</h3>
+            <ul id="taskList"></ul>
+        </div>
+    </div>
+    <script>
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                localStorage.setItem('accessToken', data.accessToken);
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                fetchTasks();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        }
+
+        function goToRegister() {
+        window.location.href = "register.html";
+        }
+        
+        async function logout() {
+            localStorage.removeItem('accessToken');
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+        }
+        
+        async function createTask() {
+            const title = document.getElementById('taskTitle').value;
+            const token = localStorage.getItem('accessToken');
+            const response = await fetch('/api/admin/tasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ title })
+            });
+            if (response.ok) fetchTasks();
+        }
+        
+        async function fetchTasks() {
+            const token = localStorage.getItem('accessToken');
+            const response = await fetch('/api/admin/tasks', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const tasks = await response.json();
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.textContent = task.title;
+                taskList.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>

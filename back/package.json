@@ -21,7 +21,8 @@
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.10.1"
+    "mongoose": "^8.10.1",
+    "nodemailer": "^6.10.0"
   },
   "description": "MONGO_URI=mongodb://localhost:27017/erp_db\r ACCESS_TOKEN_SECRET=test_secret\r REFRESH_TOKEN_SECRET=test_refresh_secret\r PORT=4000"
 }

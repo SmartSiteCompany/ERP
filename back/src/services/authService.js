@@ -15,13 +15,18 @@ const generateRefreshToken = async (user) => {
 };
 
 
-exports.register = async ({ username, password, role }) => {
-    if (await User.findOne({ username })) throw new Error('El usuario ya existe');
-    console.log('Contraseña antes de encriptar:', password);
-    const hashedPassword = await bcrypt.hash(password, 10); // 🔹 Se encripta la contraseña antes de guardarla
-    const user = new User({ username, password: hashedPassword, role });
-    return await user.save();
-};
+async function register({ nombre, apellidos, email, password, role }) {
+    if (!nombre || !apellidos || !email || !password) {
+        throw new Error("Faltan datos");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ nombre, apellidos, email, password: hashedPassword, role });
+
+    await user.save();
+    return user;
+}
+
 
 
 exports.login = async ({ username, password }) => {

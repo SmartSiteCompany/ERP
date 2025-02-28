@@ -15,75 +15,65 @@
     <div id="app">
         <h2>ERP - Login</h2>
         <div id="login-form">
-            <input type="text" id="username" placeholder="Usuario">
+            <input type="email" id="email" placeholder="Correo electrónico">
             <input type="password" id="password" placeholder="Contraseña">
             <button onclick="login()">Iniciar sesión</button>
             <button onclick="goToRegister()">Registrarse</button>
         </div>
+        
         <div id="dashboard" class="hidden">
             <h2>Bienvenido</h2>
             <button onclick="logout()">Cerrar sesión</button>
-            <h3>Crear Tarea</h3>
-            <input type="text" id="taskTitle" placeholder="Título">
-            <button onclick="createTask()">Crear Tarea</button>
-            <h3>Lista de Tareas</h3>
-            <ul id="taskList"></ul>
+            <button onclick="goToTask()">Gestión de Tareas</button>
+            <button onclick="goToestadoCuenta()">Estado de Cuenta</button>
         </div>
+
+        <!--<div id="dashboard" class="hidden">
+            <h2>Bienvenido</h2>
+            <button onclick="logout()">Cerrar sesión</button>
+            <button onclick="goToTask()">Gestión de Tareas</button>
+            <button onclick="goToestadoCuenta()">Estado de Cuenta</button>
+        </div>-->
     </div>
+
     <script>
         async function login() {
-            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
+                body: JSON.stringify({ email, password })
             });
+
             const data = await response.json();
+
             if (response.ok) {
                 localStorage.setItem('accessToken', data.accessToken);
                 document.getElementById('login-form').classList.add('hidden');
                 document.getElementById('dashboard').classList.remove('hidden');
-                fetchTasks();
             } else {
                 alert('Error: ' + data.error);
             }
         }
 
         function goToRegister() {
-        window.location.href = "register.html";
+            window.location.href = "register.html";
         }
-        
-        async function logout() {
+
+        function goToTask() {
+            window.location.href = "task.html";
+        }
+
+        function goToestadoCuenta() {
+            window.location.href = "estadoCuenta.html";
+        }
+
+        function logout() {
             localStorage.removeItem('accessToken');
             document.getElementById('login-form').classList.remove('hidden');
             document.getElementById('dashboard').classList.add('hidden');
-        }
-        
-        async function createTask() {
-            const title = document.getElementById('taskTitle').value;
-            const token = localStorage.getItem('accessToken');
-            const response = await fetch('/api/admin/tasks', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                body: JSON.stringify({ title })
-            });
-            if (response.ok) fetchTasks();
-        }
-        
-        async function fetchTasks() {
-            const token = localStorage.getItem('accessToken');
-            const response = await fetch('/api/admin/tasks', {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const tasks = await response.json();
-            const taskList = document.getElementById('taskList');
-            taskList.innerHTML = '';
-            tasks.forEach(task => {
-                const li = document.createElement('li');
-                li.textContent = task.title;
-                taskList.appendChild(li);
-            });
         }
     </script>
 </body>

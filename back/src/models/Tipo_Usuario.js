@@ -1,6 +1,8 @@
-// Tipos de Usuarios
+const mongoose = require('mongoose');
+
 const TipoUsuarioSchema = new mongoose.Schema({
-    id_tipo_usuario: { type: Number, required: true, unique: true },
-    tipo_usuario: String,
-    lineas_verificentro: [String]
-});
+  tipo_usuario: { type: String, required: true, unique: true },
+  lineas_verificentro: [String]
+}, { timestamps: true });
+
+module.exports = mongoose.model('TipoUsuario', TipoUsuarioSchema);

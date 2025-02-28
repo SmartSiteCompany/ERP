@@ -1,46 +1,15 @@
-// controllers/authController.js
-const authService = require('../services/authService');
-exports.register = async (req, res) => {
-  try {
-    const user = await authService.register(req.body);
-    res.status(201).json({ message: 'Usuario registrado', user });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-exports.login = async (req, res) => {
-  try {
-    const tokens = await authService.login(req.body);
-    res.json(tokens);
-  } catch (error) {
-    res.status(401).json({ error: error.message });
-  }
-};
-exports.refreshToken = async (req, res) => {
-  try {
-    const accessToken = await authService.refreshToken(req.body.token);
-    res.json({ accessToken });
-  } catch (error) {
-    res.status(403).json({ error: error.message });
-  }
-};
-exports.logout = async (req, res) => {
-  try {
-    await authService.logout(req.body.token);
-    res.json({ message: 'Sesión cerrada' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 // controllers/adminController.js
 const { createTask, getTasks } = require('../services/taskService');
 const createTaskHandler = async (req, res) => {
   try {
-    const task = await createTask(req.body);
-    res.status(201).json(task);
+    const { title, description, assignedTo, status, priority, dueDate } = req.body;
+    if (!title) {
+      return res.status(400).json({ error: 'El título de la tarea es obligatorio' });
+    }
+    const task = await createTask({ title, description, assignedTo, status, priority, dueDate });
+    res.status(201).json({ message: 'Tarea creada con éxito', task });
   } catch (error) {
-    res.status(500).json({ message: 'Error al crear tarea', error });
+    res.status(500).json({ error: 'Error al crear tarea', details: error.message });
   }
 };
 const getTasksHandler = async (req, res) => {
@@ -48,7 +17,61 @@ const getTasksHandler = async (req, res) => {
     const tasks = await getTasks();
     res.status(200).json(tasks);
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener tareas', error });
+    res.status(500).json({ error: 'Error al obtener tareas', details: error.message });
   }
 };
 module.exports = { createTaskHandler, getTasksHandler };
+
+// controllers/authController.js
+const authService = require('../services/authService');
+exports.register = async (req, res) => {
+  try {
+    const { username, password, role } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ error: 'El nombre de usuario y la contraseña son obligatorios' });
+    }
+    const user = await authService.register({ username, password, role });
+    res.status(201).json({ message: 'Usuario registrado con éxito', user });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al registrar usuario', details: error.message });
+  }
+};
+
+exports.login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    console.log('Datos recibidos en login:', req.body); 
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Credenciales incompletas' });
+    }
+    const tokens = await authService.login({ username, password });
+    res.status(200).json(tokens);
+  } catch (error) {
+    res.status(401).json({ error: 'Credenciales inválidas', details: error.message });
+  }
+};
+
+exports.refreshToken = async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({ error: 'Token de refresco requerido' });
+    }
+    const accessToken = await authService.refreshToken(token);
+    res.status(200).json({ accessToken });
+  } catch (error) {
+    res.status(403).json({ error: 'Token de refresco inválido o expirado', details: error.message });
+  }
+};
+exports.logout = async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({ error: 'Token requerido para cerrar sesión' });
+    }
+    await authService.logout(token);
+    res.status(200).json({ message: 'Sesión cerrada exitosamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al cerrar sesión', details: error.message });
+  }
+};

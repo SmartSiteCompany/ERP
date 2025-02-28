@@ -3,6 +3,7 @@ const { createTask, getTasks } = require('../services/taskService');
 
 const createTaskHandler = async (req, res) => {
   try {
+    console.log("🔹 Request Body:", req.body); // <-- Agregar esto para depuración
     const { title, description, assignedTo, status, priority, dueDate } = req.body;
 
     if (!title) {
@@ -25,4 +26,17 @@ const getTasksHandler = async (req, res) => {
   }
 };
 
-module.exports = { createTaskHandler, getTasksHandler };
+const { updateTask } = require('../services/taskService');
+
+const updateTaskHandler = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updatedTask = req.body;
+        const task = await updateTask(id, updatedTask);
+        res.status(200).json({ message: 'Tarea actualizada', task });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al actualizar tarea', details: error.message });
+    }
+};
+
+module.exports = { createTaskHandler, getTasksHandler, updateTaskHandler };

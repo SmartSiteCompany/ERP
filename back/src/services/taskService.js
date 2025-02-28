@@ -2,17 +2,23 @@
 const Task = require('../models/Task');
 
 const createTask = async (data) => {
-  try {
-      if (!data.title || !data.description || !data.assignedTo) {
-          throw new Error('Todos los campos son obligatorios');
-      }
-      const task = new Task(data);
-      return await task.save();
-  } catch (error) {
-      throw new Error(error.message || 'Error al crear la tarea');
-  }
-};
-
+    try {
+        console.log("🔹 Datos recibidos en createTask:", data);
+  
+        if (!data.title || !data.description) {
+            throw new Error('El título y la descripción son obligatorios');
+        }
+  
+        const task = new Task(data);
+        const savedTask = await task.save();
+  
+        console.log("✅ Tarea guardada en BD:", savedTask);
+        return savedTask;
+    } catch (error) {
+        console.error("❌ Error en createTask:", error.message);
+        throw new Error(error.message || 'Error al crear la tarea');
+    }
+  };
 
 const getTasks = async (userId, userRole) => {
   try {
@@ -26,5 +32,12 @@ const getTasks = async (userId, userRole) => {
   }
 };
 
+const updateTask = async (taskId, updatedData) => {
+    try {
+        return await Task.findByIdAndUpdate(taskId, updatedData, { new: true });
+    } catch (error) {
+        throw new Error('Error al actualizar la tarea');
+    }
+};
 
-module.exports = { createTask, getTasks };
+module.exports = { createTask, getTasks, updateTask };

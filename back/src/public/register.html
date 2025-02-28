@@ -7,13 +7,15 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
         #app { max-width: 400px; margin: auto; }
-        input, button { display: block; width: 100%; margin: 10px 0; padding: 10px; }
+        input, button, select { display: block; width: 100%; margin: 10px 0; padding: 10px; }
     </style>
 </head>
 <body>
     <div id="app">
         <h2>Registro</h2>
-        <input type="text" id="username" placeholder="Usuario">
+        <input type="text" id="nombre" placeholder="Nombre">
+        <input type="text" id="apellidos" placeholder="Apellidos">
+        <input type="email" id="email" placeholder="Correo electrónico">
         <input type="password" id="password" placeholder="Contraseña">
         <select id="role">
             <option value="user">Usuario</option>
@@ -25,3 +27,4 @@
     <script src="js/registerHandler.js"></script>
 </body>
 </html>
+

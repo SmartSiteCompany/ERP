@@ -1,20 +1,28 @@
-// routes/admin.js
+// src/routes/authRoutes
 const express = require('express');
-const { createTaskHandler, getTasksHandler } = require('../controllers/adminController');
-const authMiddleware = require('../middlewares/authMiddleware');
-
+const bcrypt = require('bcrypt');
+const User = require('../models/User');
 const router = express.Router();
-
-router.post('/tasks', authMiddleware.authenticateToken, createTaskHandler);
-router.get('/tasks', authMiddleware.authenticateToken, getTasksHandler);
-
+router.post('/register', async (req, res) => {
+    try {
+        const { username, password, role } = req.body;
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Faltan datos' });
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = new User({ username, password: hashedPassword, role });
+        await user.save();
+        res.json({ message: 'Registro exitoso' });
+    } catch (err) {
+        res.status(500).json({ error: 'Error en el registro' });
+    }
+});
 module.exports = router;
 
 //routes/auth
 const express = require('express');
 const authService = require('../services/authService');
 const router = express.Router();
-
 router.post('/register', async (req, res) => {
     try {
         const user = await authService.register(req.body);
@@ -23,7 +31,6 @@ router.post('/register', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-
 router.post('/login', async (req, res) => {
     try {
         const tokens = await authService.login(req.body);
@@ -32,7 +39,6 @@ router.post('/login', async (req, res) => {
         res.status(401).json({ error: error.message });
     }
 });
-
 router.post('/refresh', async (req, res) => {
     try {
         const accessToken = await authService.refreshToken(req.body.token);
@@ -41,7 +47,6 @@ router.post('/refresh', async (req, res) => {
         res.status(403).json({ error: error.message });
     }
 });
-
 router.post('/logout', async (req, res) => {
     try {
         await authService.logout(req.body.token);
@@ -50,31 +55,13 @@ router.post('/logout', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-
 module.exports = router;
 
-// routes/authRoutes.js
+// routes/admin.js
 const express = require('express');
-const bcrypt = require('bcrypt');
-const User = require('../models/User');
-
+const { createTaskHandler, getTasksHandler } = require('../controllers/adminController');
+const authMiddleware = require('../middlewares/authMiddleware');
 const router = express.Router();
-
-router.post('/register', async (req, res) => {
-    try {
-        const { username, password, role } = req.body;
-        if (!username || !password) {
-            return res.status(400).json({ error: 'Faltan datos' });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new User({ username, password: hashedPassword, role });
-
-        await user.save();
-        res.json({ message: 'Registro exitoso' });
-    } catch (err) {
-        res.status(500).json({ error: 'Error en el registro' });
-    }
-});
-
+router.post('/tasks', authMiddleware.authenticateToken, createTaskHandler);
+router.get('/tasks', authMiddleware.authenticateToken, getTasksHandler);
 module.exports = router;

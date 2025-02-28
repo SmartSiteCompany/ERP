@@ -1,6 +1,5 @@
-// Productos Vendidos
+// Modelo de Producto Vendido
 const ProductoVendidoSchema = new mongoose.Schema({
-    id_producto_vendido: { type: Number, required: true, unique: true },
     codigo: String,
     descripcion: String,
     preciosmart: Number,
@@ -9,5 +8,6 @@ const ProductoVendidoSchema = new mongoose.Schema({
     precioventa: Number,
     preciototalventa: Number,
     existente: Boolean,
-    id_cotizacion: { type: Number, ref: 'Cotizacion' }
-});
+    cotizacion: { type: mongoose.Schema.Types.ObjectId, ref: 'Cotizacion' }
+}, { timestamps: true });
+const ProductoVendido = mongoose.model('ProductoVendido', ProductoVendidoSchema);

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estado de Cuenta - Administración</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        input, button { padding: 8px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h2>Administración de Estados de Cuenta</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Cliente</th>
+                <th>Total</th>
+                <th>Anticipo</th>
+                <th>Restante</th>
+                <th>Semanas</th>
+                <th>Día Pago</th>
+                <th>Método Pago</th>
+                <th>Recargo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="estadoCuentaTable"></tbody>
+    </table>
+    <script>
+        async function fetchEstadosCuenta() {
+            const token = localStorage.getItem('accessToken');
+            const response = await fetch('/api/estado-cuenta', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const estados = await response.json();
+            const tableBody = document.getElementById('estadoCuentaTable');
+            tableBody.innerHTML = '';
+            
+            estados.forEach(estado => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>\${estado.id_cliente.nombre_cliente}</td>
+                    <td><input type="number" value="\${estado.total_estado_cuenta}" id="total-\${estado._id}"></td>
+                    <td><input type="number" value="\${estado.anticipo_estado_cuenta}" id="anticipo-\${estado._id}"></td>
+                    <td>\${estado.restante}</td>
+                    <td><input type="number" value="\${estado.cantidad_semanas}" id="semanas-\${estado._id}"></td>
+                    <td><input type="text" value="\${estado.dia_pago}" id="dia-\${estado._id}"></td>
+                    <td><input type="text" value="\${estado.metodo_pago}" id="metodo-\${estado._id}"></td>
+                    <td><input type="number" value="\${estado.recargo_impuntualidad}" id="recargo-\${estado._id}"></td>
+                    <td><button onclick="updateEstadoCuenta('\${estado._id}')">Actualizar</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        async function updateEstadoCuenta(id) {
+            const token = localStorage.getItem('accessToken');
+            const estadoData = {
+                total_estado_cuenta: document.getElementById(`total-\${id}`).value,
+                anticipo_estado_cuenta: document.getElementById(`anticipo-\${id}`).value,
+                cantidad_semanas: document.getElementById(`semanas-\${id}`).value,
+                dia_pago: document.getElementById(`dia-\${id}`).value,
+                metodo_pago: document.getElementById(`metodo-\${id}`).value,
+                recargo_impuntualidad: document.getElementById(`recargo-\${id}`).value
+            };
+            
+            await fetch(`/api/estado-cuenta/\${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify(estadoData)
+            });
+            fetchEstadosCuenta();
+        }
+        
+        fetchEstadosCuenta();
+    </script>
+</body>
+</html>

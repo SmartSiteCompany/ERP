@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Tareas</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        #taskContainer { max-width: 600px; margin: auto; text-align: left; }
+        .task-item { border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        input, select, button { display: block; width: 100%; margin: 5px 0; padding: 8px; }
+    </style>
+</head>
+<body>
+    <h2>Gestión de Tareas</h2>
+    <button onclick="logout()">Cerrar sesión</button>
+    <button onclick="goToDashboard()">Volver al Dashboard</button>
+    <h3>Lista de Tareas</h3>
+    <div id="taskContainer"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', fetchTasks);
+
+        async function fetchTasks() {
+            const token = localStorage.getItem('accessToken');
+            const response = await fetch('/api/admin/tasks', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            const tasks = await response.json();
+            const taskContainer = document.getElementById('taskContainer');
+            taskContainer.innerHTML = '';
+
+            tasks.forEach(task => {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = 'task-item';
+                taskDiv.innerHTML = `
+                    <strong>Título:</strong> ${task.title} <br>
+                    <label>Descripción:</label>
+                    <input type="text" value="${task.description || ''}" id="desc-${task._id}">
+                    
+                    <label>Estado:</label>
+                    <select id="status-${task._id}">
+                        <option value="Pendiente" ${task.status === "Pendiente" ? "selected" : ""}>Pendiente</option>
+                        <option value="En progreso" ${task.status === "En progreso" ? "selected" : ""}>En progreso</option>
+                        <option value="Completada" ${task.status === "Completada" ? "selected" : ""}>Completada</option>
+                    </select>
+
+                    <label>Prioridad:</label>
+                    <select id="priority-${task._id}">
+                        <option value="Baja" ${task.priority === "Baja" ? "selected" : ""}>Baja</option>
+                        <option value="Media" ${task.priority === "Media" ? "selected" : ""}>Media</option>
+                        <option value="Alta" ${task.priority === "Alta" ? "selected" : ""}>Alta</option>
+                    </select>
+
+                    <label>Fecha límite:</label>
+                    <input type="date" id="dueDate-${task._id}" value="${task.dueDate ? task.dueDate.split('T')[0] : ''}">
+
+                    <button onclick="updateTask('${task._id}')">Actualizar Tarea</button>
+                `;
+
+                taskContainer.appendChild(taskDiv);
+            });
+        }
+
+        async function updateTask(taskId) {
+            const token = localStorage.getItem('accessToken');
+
+            const updatedTask = {
+                description: document.getElementById(`desc-${taskId}`).value,
+                status: document.getElementById(`status-${taskId}`).value,
+                priority: document.getElementById(`priority-${taskId}`).value,
+                dueDate: document.getElementById(`dueDate-${taskId}`).value || null
+            };
+
+            const response = await fetch(`/api/admin/tasks/${taskId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(updatedTask)
+            });
+
+            const data = await response.json();
+            alert(data.message || 'Tarea actualizada');
+            fetchTasks(); // Recargar la lista
+        }
+
+        function logout() {
+            localStorage.removeItem('accessToken');
+            window.location.href = "index.html";
+        }
+
+        function goToDashboard() {
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>

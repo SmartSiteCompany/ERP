@@ -1,0 +1,31 @@
+<!--register.html-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        #app { max-width: 400px; margin: auto; }
+        input, button, select { display: block; width: 100%; margin: 10px 0; padding: 10px; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h2>Registro</h2>
+        <input type="text" id="nombre" placeholder="Nombre">
+        <input type="text" id="apellidos" placeholder="Apellidos">
+        <input type="email" id="email" placeholder="Correo electrónico">
+        <input type="password" id="password" placeholder="Contraseña">
+        <select id="role">
+            <option value="user">Usuario</option>
+            <option value="admin">Administrador</option>
+        </select>
+        <button onclick="register()">Registrarse</button>
+        <button onclick="goToLogin()">Volver</button>
+    </div>
+    <script src="js/registerHandler.js"></script>
+</body>
+</html>
+

@@ -1,14 +1,17 @@
-// src/routes/clienteRoutes.js
 const express = require('express');
 const clienteController = require('../controllers/clienteController');
-const authMiddleware = require('../middlewares/authMiddleware');
 const router = express.Router();
 
-//router.post('/', authMiddleware.authenticateToken, clienteController.createCliente);
-//router.get('/', authMiddleware.authenticateToken, clienteController.getClientes);
-
+// Crear cliente
 router.post('/', clienteController.createCliente);
+
+// Obtener todos los clientes
 router.get('/', clienteController.getClientes);
 
+// Actualizar cliente
+router.put('/:id', clienteController.updateCliente);
+
+// Eliminar cliente
+router.delete('/:id', clienteController.deleteCliente);
 
 module.exports = router;

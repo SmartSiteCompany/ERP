@@ -1,3 +1,4 @@
+// src/public/js/registerHandler.js
 async function register() {
     const nombre = document.getElementById('nombre').value;
     const apellidos = document.getElementById('apellidos').value;

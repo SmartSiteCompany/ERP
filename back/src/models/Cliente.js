@@ -1,3 +1,4 @@
+// src/models/Cliente.js
 const mongoose = require('mongoose');
 
 const ClienteSchema = new mongoose.Schema({

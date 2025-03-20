@@ -3,7 +3,7 @@ const Opportunity = require('../models/oportunidad');
 // Obtener todas las oportunidades
 const obtenerOportunidades = async (req, res) => {
   try {
-    const oportunidades = await find().populate('cliente_id');
+    const oportunidades = await Opportunity.find().populate('cliente_id');
     res.json(oportunidades);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -13,7 +13,7 @@ const obtenerOportunidades = async (req, res) => {
 // Obtener una oportunidad por ID
 const obtenerOportunidadPorId = async (req, res) => {
   try {
-    const oportunidad = await findById(req.params.id).populate('cliente_id');
+    const oportunidad = await Opportunity.findById(req.params.id).populate('cliente_id');
     if (!oportunidad) {
       return res.status(404).json({ error: 'Oportunidad no encontrada' });
     }
@@ -37,7 +37,7 @@ const crearOportunidad = async (req, res) => {
 // Actualizar una oportunidad
 const actualizarOportunidad = async (req, res) => {
   try {
-    const oportunidad = await findByIdAndUpdate(req.params.id, req.body, {
+    const oportunidad = await Opportunity.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
@@ -53,7 +53,7 @@ const actualizarOportunidad = async (req, res) => {
 // Eliminar una oportunidad
 const eliminarOportunidad = async (req, res) => {
   try {
-    const oportunidad = await findByIdAndDelete(req.params.id);
+    const oportunidad = await Opportunity.findByIdAndDelete(req.params.id);
     if (!oportunidad) {
       return res.status(404).json({ error: 'Oportunidad no encontrada' });
     }

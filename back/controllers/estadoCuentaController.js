@@ -3,7 +3,7 @@ const EstadoCuenta = require('../models/EstadoCuenta');
 // Obtener todos los estados de cuenta
 const obtenerEstadosCuenta = async (req, res) => {
   try {
-    const estados = await find().populate('cliente_id servicio_id');
+    const estados = await EstadoCuenta.find().populate('cliente_id servicio_id');
     res.json(estados);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -13,7 +13,7 @@ const obtenerEstadosCuenta = async (req, res) => {
 // Obtener un estado de cuenta por ID
 const obtenerEstadoCuentaPorId = async (req, res) => {
   try {
-    const estado = await findById(req.params.id).populate('cliente_id servicio_id');
+    const estado = await EstadoCuenta.findById(req.params.id).populate('cliente_id servicio_id');
     if (!estado) {
       return res.status(404).json({ error: 'Estado de cuenta no encontrado' });
     }
@@ -37,7 +37,7 @@ const crearEstadoCuenta = async (req, res) => {
 // Actualizar un estado de cuenta
 const actualizarEstadoCuenta = async (req, res) => {
   try {
-    const estado = await findByIdAndUpdate(req.params.id, req.body, {
+    const estado = await EstadoCuenta.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
@@ -53,7 +53,7 @@ const actualizarEstadoCuenta = async (req, res) => {
 // Eliminar un estado de cuenta
 const eliminarEstadoCuenta = async (req, res) => {
   try {
-    const estado = await findByIdAndDelete(req.params.id);
+    const estado = await EstadoCuenta.findByIdAndDelete(req.params.id);
     if (!estado) {
       return res.status(404).json({ error: 'Estado de cuenta no encontrado' });
     }

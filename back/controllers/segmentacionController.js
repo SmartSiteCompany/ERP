@@ -3,7 +3,7 @@ const Segmentation = require('../models/segmentation');
 // Obtener todas las segmentaciones
 const obtenerSegmentaciones = async (req, res) => {
   try {
-    const segmentaciones = await find().populate('clientes');
+    const segmentaciones = await Segmentation.find().populate('clientes');
     res.json(segmentaciones);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -13,7 +13,7 @@ const obtenerSegmentaciones = async (req, res) => {
 // Obtener una segmentación por ID
 const obtenerSegmentacionPorId = async (req, res) => {
   try {
-    const segmentacion = await findById(req.params.id).populate('clientes');
+    const segmentacion = await Segmentation.findById(req.params.id).populate('clientes');
     if (!segmentacion) {
       return res.status(404).json({ error: 'Segmentación no encontrada' });
     }
@@ -37,7 +37,7 @@ const crearSegmentacion = async (req, res) => {
 // Actualizar una segmentación
 const actualizarSegmentacion = async (req, res) => {
   try {
-    const segmentacion = await findByIdAndUpdate(req.params.id, req.body, {
+    const segmentacion = await Segmentation.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
@@ -53,7 +53,7 @@ const actualizarSegmentacion = async (req, res) => {
 // Eliminar una segmentación
 const eliminarSegmentacion = async (req, res) => {
   try {
-    const segmentacion = await findByIdAndDelete(req.params.id);
+    const segmentacion = await Segmentation.findByIdAndDelete(req.params.id);
     if (!segmentacion) {
       return res.status(404).json({ error: 'Segmentación no encontrada' });
     }

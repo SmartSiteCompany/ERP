@@ -44,6 +44,7 @@ const swaggerOptions = {
         },
       },
       schemas: {
+        //Usuario
         User: {
           type: "object",
           properties: {
@@ -56,6 +57,7 @@ const swaggerOptions = {
             rol_user: { type: "string" },
           },
         },
+        //Filial
         Filial: {
           type: "object",
           properties: {
@@ -63,6 +65,7 @@ const swaggerOptions = {
             cotizaciones: { type: "string" },
           },
         },
+        //Password Reset
         PasswordReset: {
           type: "object",
           properties: {
@@ -70,6 +73,7 @@ const swaggerOptions = {
             token: { type: "string" },
           },
         },
+        // Servicio Financiado
         ServicioFinanciado: {
           type: "object",
           properties: {
@@ -92,6 +96,7 @@ const swaggerOptions = {
             "saldo_restante",
           ],
         },
+        // Pago
         Pago: {
           type: "object",
           properties: {
@@ -110,6 +115,7 @@ const swaggerOptions = {
             "saldo_pendiente",
           ],
         },
+        // Estado de cuenta
         EstadoCuenta: {
           type: "object",
           properties: {
@@ -134,6 +140,7 @@ const swaggerOptions = {
             "total_a_pagar",
           ],
         },
+        // Cotización
         Cotizacion: {
           type: "object",
           properties: {
@@ -168,6 +175,7 @@ const swaggerOptions = {
             "detalles",
           ],
         },
+        // Cliente
         Cliente: {
           type: "object",
           properties: {
@@ -185,9 +193,11 @@ const swaggerOptions = {
             "telefono",
             "correo",
             "direccion",
+            "estado_cliente",
             "tipo_cliente",
           ],
         },
+        // ChangeLog
         ChangeLog: {
           type: "object",
           properties: {
@@ -230,6 +240,7 @@ const swaggerOptions = {
             "estado",
           ],
         },
+        // Documento
         Documento: {
           type: "object",
           properties: {
@@ -242,6 +253,7 @@ const swaggerOptions = {
           },
           required: ["cliente_id", "nombre", "tipo", "archivo"],
         },
+        //Evento
         Evento: {
           type: "object",
           properties: {
@@ -258,6 +270,7 @@ const swaggerOptions = {
           },
           required: ["nombre", "descripcion", "fecha", "ubicacion"],
         },
+        // Feedback
         Feedback: {
           type: "object",
           properties: {
@@ -269,6 +282,7 @@ const swaggerOptions = {
           },
           required: ["cliente_id", "comentario", "calificacion"],
         },
+        // Interacción
         Interaccion: {
           type: "object",
           properties: {
@@ -287,6 +301,7 @@ const swaggerOptions = {
             "responsable",
           ],
         },
+        // Nota
         Nota: {
           type: "object",
           properties: {
@@ -298,6 +313,7 @@ const swaggerOptions = {
           },
           required: ["cliente_id", "contenido", "autor"],
         },
+        // Oportunidad
         Oportunidad: {
           type: "object",
           properties: {
@@ -317,6 +333,7 @@ const swaggerOptions = {
             "responsable",
           ],
         },
+        // Segmentacion
         Segmentacion: {
           type: "object",
           properties: {
@@ -332,6 +349,7 @@ const swaggerOptions = {
           },
           required: ["nombre", "descripcion", "criterios"],
         },
+        // Tarea
         Tarea: {
           type: "object",
           properties: {

@@ -3,7 +3,7 @@ const Cliente = require('../models/Cliente');
 // Obtener todos los clientes
 const obtenerClientes = async(req, res) => {
   try {
-    const clientes = await find();
+    const clientes = await Cliente.find();
     res.json(clientes);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -13,7 +13,7 @@ const obtenerClientes = async(req, res) => {
 // Obtener un cliente por ID
 const obtenerClientePorId = async(req, res) => {
   try {
-    const cliente = await findById(req.params.id);
+    const cliente = await Cliente.findById(req.params.id);
     if (!cliente) {
       return res.status(404).json({ error: 'Cliente no encontrado' });
     }
@@ -37,7 +37,7 @@ const crearCliente = async(req, res) => {
 // Actualizar un cliente
 const actualizarCliente = async(req, res) => {
   try {
-    const cliente = await findByIdAndUpdate(req.params.id, req.body, {
+    const cliente = await Cliente.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
@@ -53,7 +53,7 @@ const actualizarCliente = async(req, res) => {
 // Eliminar un cliente
 const eliminarCliente = async(req, res) => {
   try {
-    const cliente = await findByIdAndDelete(req.params.id);
+    const cliente = await Cliente.findByIdAndDelete(req.params.id);
     if (!cliente) {
       return res.status(404).json({ error: 'Cliente no encontrado' });
     }

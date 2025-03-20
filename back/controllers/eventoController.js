@@ -3,7 +3,7 @@ const Event = require('../models/Evento');
 // Obtener todos los eventos
 const obtenerEventos = async(req, res) => {
   try {
-    const eventos = await find().populate('clientes');
+    const eventos = await Event.find().populate('clientes');
     res.json(eventos);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -13,7 +13,7 @@ const obtenerEventos = async(req, res) => {
 // Obtener un evento por ID
 const obtenerEventoPorId = async(req, res) => {
   try {
-    const evento = await findById(req.params.id).populate('clientes');
+    const evento = await Event.findById(req.params.id).populate('clientes');
     if (!evento) {
       return res.status(404).json({ error: 'Evento no encontrado' });
     }
@@ -37,7 +37,7 @@ const crearEvento = async(req, res) => {
 // Actualizar un evento
 const actualizarEvento = async(req, res) => {
   try {
-    const evento = await findByIdAndUpdate(req.params.id, req.body, {
+    const evento = await Event.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
@@ -53,7 +53,7 @@ const actualizarEvento = async(req, res) => {
 // Eliminar un evento
 const eliminarEvento = async(req, res) => {
   try {
-    const evento = await findByIdAndDelete(req.params.id);
+    const evento = await Event.findByIdAndDelete(req.params.id);
     if (!evento) {
       return res.status(404).json({ error: 'Evento no encontrado' });
     }

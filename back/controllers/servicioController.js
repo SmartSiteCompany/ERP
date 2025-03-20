@@ -3,7 +3,7 @@ const ServicioFinanciado = require('../models/ServicioFinanciado');
 // Obtener todos los servicios financiados
 const obtenerServiciosFinanciados = async (req, res) => {
   try {
-    const servicios = await find().populate('cliente_id');
+    const servicios = await ServicioFinanciado.find().populate('cliente_id');
     res.json(servicios);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -13,7 +13,7 @@ const obtenerServiciosFinanciados = async (req, res) => {
 // Obtener un servicio financiado por ID
 const obtenerServicioFinanciadoPorId = async (req, res) => {
   try {
-    const servicio = await findById(req.params.id).populate('cliente_id');
+    const servicio = await ServicioFinanciado.findById(req.params.id).populate('cliente_id');
     if (!servicio) {
       return res.status(404).json({ error: 'Servicio no encontrado' });
     }
@@ -37,7 +37,7 @@ const crearServicioFinanciado = async (req, res) => {
 // Actualizar un servicio financiado
 const actualizarServicioFinanciado = async (req, res) => {
   try {
-    const servicio = await findByIdAndUpdate(req.params.id, req.body, {
+    const servicio = await ServicioFinanciado.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
@@ -53,7 +53,7 @@ const actualizarServicioFinanciado = async (req, res) => {
 // Eliminar un servicio financiado
 const eliminarServicioFinanciado = async (req, res) => {
   try {
-    const servicio = await findByIdAndDelete(req.params.id);
+    const servicio = await ServicioFinanciado.findByIdAndDelete(req.params.id);
     if (!servicio) {
       return res.status(404).json({ error: 'Servicio no encontrado' });
     }

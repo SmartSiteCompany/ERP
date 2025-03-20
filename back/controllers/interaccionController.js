@@ -3,7 +3,7 @@ const Interaction = require('../models/Interaction');
 // Obtener todas las interacciones
 const obtenerInteracciones = async (req, res) => {
   try {
-    const interacciones = await find().populate('cliente_id');
+    const interacciones = await Interaction.find().populate('cliente_id');
     res.json(interacciones);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -13,7 +13,7 @@ const obtenerInteracciones = async (req, res) => {
 // Obtener una interacción por ID
 const obtenerInteraccionPorId = async (req, res) => {
   try {
-    const interaccion = await findById(req.params.id).populate('cliente_id');
+    const interaccion = await Interaction.findById(req.params.id).populate('cliente_id');
     if (!interaccion) {
       return res.status(404).json({ error: 'Interacción no encontrada' });
     }
@@ -37,7 +37,7 @@ const crearInteraccion = async (req, res) => {
 // Actualizar una interacción
 const actualizarInteraccion = async (req, res) => {
   try {
-    const interaccion = await findByIdAndUpdate(req.params.id, req.body, {
+    const interaccion = await Interaction.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
@@ -53,7 +53,7 @@ const actualizarInteraccion = async (req, res) => {
 // Eliminar una interacción
 const eliminarInteraccion = async (req, res) => {
   try {
-    const interaccion = await findByIdAndDelete(req.params.id);
+    const interaccion = await Interaction.findByIdAndDelete(req.params.id);
     if (!interaccion) {
       return res.status(404).json({ error: 'Interacción no encontrada' });
     }

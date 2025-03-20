@@ -3,7 +3,7 @@ const Note = require('../models/Note');
 // Obtener todas las notas
 const obtenerNotas = async (req, res) => {
   try {
-    const notas = await find().populate('cliente_id');
+    const notas = await Note.find().populate('cliente_id');
     res.json(notas);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -13,7 +13,7 @@ const obtenerNotas = async (req, res) => {
 // Obtener una nota por ID
 const obtenerNotaPorId = async (req, res) => {
   try {
-    const nota = await findById(req.params.id).populate('cliente_id');
+    const nota = await Note.findById(req.params.id).populate('cliente_id');
     if (!nota) {
       return res.status(404).json({ error: 'Nota no encontrada' });
     }
@@ -37,7 +37,7 @@ const crearNota = async (req, res) => {
 // Actualizar una nota
 const actualizarNota = async (req, res) => {
   try {
-    const nota = await findByIdAndUpdate(req.params.id, req.body, {
+    const nota = await Note.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
@@ -53,7 +53,7 @@ const actualizarNota = async (req, res) => {
 // Eliminar una nota
 const eliminarNota = async (req, res) => {
   try {
-    const nota = await findByIdAndDelete(req.params.id);
+    const nota = await Note.findByIdAndDelete(req.params.id);
     if (!nota) {
       return res.status(404).json({ error: 'Nota no encontrada' });
     }

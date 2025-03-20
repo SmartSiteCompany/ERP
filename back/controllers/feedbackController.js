@@ -3,7 +3,7 @@ const Feedback = require('../models/Feedback');
 // Obtener todos los feedbacks
 const obtenerFeedbacks = async (req, res) => {
   try {
-    const feedbacks = await find().populate('cliente_id');
+    const feedbacks = await Feedback.find().populate('cliente_id');
     res.json(feedbacks);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -13,7 +13,7 @@ const obtenerFeedbacks = async (req, res) => {
 // Obtener un feedback por ID
 const obtenerFeedbackPorId = async (req, res) => {
   try {
-    const feedback = await findById(req.params.id).populate('cliente_id');
+    const feedback = await Feedback.findById(req.params.id).populate('cliente_id');
     if (!feedback) {
       return res.status(404).json({ error: 'Feedback no encontrado' });
     }
@@ -37,7 +37,7 @@ const crearFeedback = async (req, res) => {
 // Actualizar un feedback
 const actualizarFeedback = async (req, res) => {
   try {
-    const feedback = await findByIdAndUpdate(req.params.id, req.body, {
+    const feedback = await Feedback.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
@@ -53,7 +53,7 @@ const actualizarFeedback = async (req, res) => {
 // Eliminar un feedback
 const eliminarFeedback = async (req, res) => {
   try {
-    const feedback = await findByIdAndDelete(req.params.id);
+    const feedback = await Feedback.findByIdAndDelete(req.params.id);
     if (!feedback) {
       return res.status(404).json({ error: 'Feedback no encontrado' });
     }

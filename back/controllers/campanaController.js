@@ -3,7 +3,7 @@ const Campaign = require('../models/Campaign');
 // Obtener todas las campañas
 const obtenerCampaigns = async (req, res) => {
   try {
-    const campaigns = await find().populate('clientes');
+    const campaigns = await Campaign.find().populate('clientes');
     res.json(campaigns);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -13,7 +13,7 @@ const obtenerCampaigns = async (req, res) => {
 // Obtener una campaña por ID
 const obtenerCampaignPorId = async (req, res) => {
   try {
-    const campaign = await findById(req.params.id).populate('clientes');
+    const campaign = await Campaign.findById(req.params.id).populate('clientes');
     if (!campaign) {
       return res.status(404).json({ error: 'Campaña no encontrada' });
     }
@@ -37,7 +37,7 @@ const crearCampaign = async (req, res) => {
 // Actualizar una campaña
 const actualizarCampaign = async (req, res) => {
   try {
-    const campaign = await findByIdAndUpdate(req.params.id, req.body, {
+    const campaign = await Campaign.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
@@ -53,7 +53,7 @@ const actualizarCampaign = async (req, res) => {
 // Eliminar una campaña
 const eliminarCampaign = async (req, res) => {
   try {
-    const campaign = await findByIdAndDelete(req.params.id);
+    const campaign = await Campaign.findByIdAndDelete(req.params.id);
     if (!campaign) {
       return res.status(404).json({ error: 'Campaña no encontrada' });
     }

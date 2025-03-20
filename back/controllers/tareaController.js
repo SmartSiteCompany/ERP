@@ -3,7 +3,7 @@ const Task = require('../models/Task');
 // Obtener todas las tareas
 const obtenerTareas = async (req, res) => {
   try {
-    const tareas = await find().populate('cliente_id');
+    const tareas = await Task.find().populate('cliente_id');
     res.json(tareas);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -13,7 +13,7 @@ const obtenerTareas = async (req, res) => {
 // Obtener una tarea por ID
 const obtenerTareaPorId = async (req, res) => {
   try {
-    const tarea = await findById(req.params.id).populate('cliente_id');
+    const tarea = await Task.findById(req.params.id).populate('cliente_id');
     if (!tarea) {
       return res.status(404).json({ error: 'Tarea no encontrada' });
     }
@@ -37,7 +37,7 @@ const crearTarea = async (req, res) => {
 // Actualizar una tarea
 const actualizarTarea = async (req, res) => {
   try {
-    const tarea = await findByIdAndUpdate(req.params.id, req.body, {
+    const tarea = await Task.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
@@ -53,7 +53,7 @@ const actualizarTarea = async (req, res) => {
 // Eliminar una tarea
 const eliminarTarea = async (req, res) => {
   try {
-    const tarea = await findByIdAndDelete(req.params.id);
+    const tarea = await Task.findByIdAndDelete(req.params.id);
     if (!tarea) {
       return res.status(404).json({ error: 'Tarea no encontrada' });
     }

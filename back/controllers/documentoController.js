@@ -3,7 +3,7 @@ const Document = require('../models/Documento');
 // Obtener todos los documentos
 const obtenerDocumentos = async (req, res) => {
   try {
-    const documentos = await find().populate('cliente_id');
+    const documentos = await Document.find().populate('cliente_id');
     res.json(documentos);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -13,7 +13,7 @@ const obtenerDocumentos = async (req, res) => {
 // Obtener un documento por ID
 const obtenerDocumentoPorId = async (req, res) => {
   try {
-    const documento = await findById(req.params.id).populate('cliente_id');
+    const documento = await Document.findById(req.params.id).populate('cliente_id');
     if (!documento) {
       return res.status(404).json({ error: 'Documento no encontrado' });
     }
@@ -37,7 +37,7 @@ const crearDocumento = async (req, res) => {
 // Actualizar un documento
 const actualizarDocumento = async (req, res) => {
   try {
-    const documento = await findByIdAndUpdate(req.params.id, req.body, {
+    const documento = await Document.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
@@ -53,7 +53,7 @@ const actualizarDocumento = async (req, res) => {
 // Eliminar un documento
 const eliminarDocumento = async (req, res) => {
   try {
-    const documento = await findByIdAndDelete(req.params.id);
+    const documento = await Document.findByIdAndDelete(req.params.id);
     if (!documento) {
       return res.status(404).json({ error: 'Documento no encontrado' });
     }

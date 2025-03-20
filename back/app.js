@@ -14,16 +14,22 @@ const pagoRoutes = require("./routes/pagoRoutes");
 const estadoCuentaRoutes = require("./routes/estadoCuentaRoutes");
 
 require("dotenv").config();
+const port = process.env.PORT || 3000;
+const mongoURI = process.env.MONGODB_URI;
 
 const app = express();
 app.use(express.json());
 
 // Conexión a MongoDB
-require("./config/db");
+/*require("./config/db");
 mongoose.connect("mongodb://localhost:27017/SSC_intCRM", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-});
+});*/
+
+// Cors
+const cors = require('cors');
+app.use(cors({ origin: 'http://localhost:3000' })); 
 
 // Configuración de Swagger
 const swaggerOptions = {

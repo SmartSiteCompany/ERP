@@ -26,7 +26,7 @@
         <!-- Formulario de registro -->
         <div id="register-form" class="hidden">
             <h2>Registro de Usuario</h2>
-            <input type="text" id="nombre" placeholder="Nombre">
+            <input type="text" id="nombre_registro" placeholder="Nombre">
             <input type="text" id="apellidos" placeholder="Apellidos">
             <input type="email" id="register-email" placeholder="Correo electrónico">
             <input type="password" id="register-password" placeholder="Contraseña">
@@ -76,7 +76,7 @@
         }
 
         async function register() {
-            const nombre = document.getElementById('nombre').value;
+            const nombre = document.getElementById('nombre_registro').value;
             const apellidos = document.getElementById('apellidos').value;
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
@@ -109,9 +109,22 @@
         }
 
         async function loadSection(section) {
+            if (!localStorage.getItem('accessToken')) {
+                alert('Debe iniciar sesión para acceder a esta sección.');
+                logout();
+                return;
+            }
+
             const contentDiv = document.getElementById('content');
             const response = await fetch(`sections/${section}.html`);
-            contentDiv.innerHTML = await response.text();
+            const htmlContent = await response.text();
+            contentDiv.innerHTML = htmlContent;
+
+            if (section === 'clientes') {
+                const script = document.createElement('script');
+                script.src = 'scripts/clientes.js';
+                document.body.appendChild(script);
+            }
         }
     </script>
 </body>

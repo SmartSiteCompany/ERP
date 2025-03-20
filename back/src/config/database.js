@@ -1,5 +1,5 @@
 // config/database.js
-require('dotenv').config(); // Cargar variables de entorno
+require('dotenv').config();
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
@@ -8,7 +8,6 @@ const connectDB = async () => {
 
     console.log(`✅ MongoDB conectado en: ${mongoose.connection.host}`);
 
-    // Listeners para eventos de conexión
     mongoose.connection.on('disconnected', () => {
       console.warn('⚠️ Conexión a MongoDB perdida. Intentando reconectar...');
     });

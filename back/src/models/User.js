@@ -10,10 +10,4 @@ const UserSchema = new mongoose.Schema({
   role: { type: String, enum: ['super_user', 'admin', 'user'], default: 'user' }
 }, { timestamps: true });
 
-/*UserSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
-});*/
-
 module.exports = mongoose.model('User', UserSchema);

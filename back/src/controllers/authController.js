@@ -3,18 +3,23 @@ const authService = require('../services/authService');
 
 exports.register = async (req, res) => {
   try {
-    const { username, password, role } = req.body;
+    console.log('Datos recibidos en register:', req.body);
 
-    if (!username || !password) {
-      return res.status(400).json({ error: 'El nombre de usuario y la contraseña son obligatorios' });
+    const { email, password, role } = req.body; // Cambiar username → email
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'El email y la contraseña son obligatorios' });
     }
 
-    const user = await authService.register({ username, password, role });
+    const user = await authService.register({ email, password, role }); 
     res.status(201).json({ message: 'Usuario registrado con éxito', user });
+
   } catch (error) {
+    console.error('Error en register:', error);
     res.status(500).json({ error: 'Error al registrar usuario', details: error.message });
   }
 };
+
 
 exports.login = async (req, res) => {
   try {

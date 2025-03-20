@@ -20,12 +20,12 @@ const mongoURI = process.env.MONGODB_URI;
 const app = express();
 app.use(express.json());
 
-// Conexión a MongoDB
-/*require("./config/db");
+//Conexión a MongoDB
+require("./config/db");
 mongoose.connect("mongodb://localhost:27017/SSC_intCRM", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-});*/
+});
 
 // Cors
 const cors = require('cors');
@@ -58,6 +58,7 @@ const swaggerOptions = {
             apellidos: { type: "string" },
             email: { type: "string" },
             password: { type: "string" },
+            area: { type: "string" },
             bloqueo: { type: "string" },
             foto_user: { type: "string" },
             rol_user: { type: "string" },

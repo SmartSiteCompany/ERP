@@ -1,3 +1,4 @@
+// src/models/Interacciones.js
 const mongoose = require('mongoose');
 
 const interaccionSchema = new mongoose.Schema({

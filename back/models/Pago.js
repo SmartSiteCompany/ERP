@@ -1,3 +1,4 @@
+// src/models/Pago.js
 const mongoose = require('mongoose');
 
 const pagoSchema = new mongoose.Schema({

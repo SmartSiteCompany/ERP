@@ -1,3 +1,4 @@
+// src/models/Tarea.js
 const mongoose = require('mongoose');
 
 const tareaSchema = new mongoose.Schema({

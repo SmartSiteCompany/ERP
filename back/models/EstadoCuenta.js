@@ -1,3 +1,4 @@
+// src/models/EstadoCuenta.js
 const mongoose = require('mongoose');
 
 const estadoCuentaSchema = new mongoose.Schema({

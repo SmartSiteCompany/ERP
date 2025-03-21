@@ -1,3 +1,4 @@
+// src/models/Cotizacion.js
 const mongoose = require('mongoose');
 
 const cotizacionSchema = new mongoose.Schema({

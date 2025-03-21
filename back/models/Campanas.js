@@ -1,3 +1,4 @@
+// src/models/Campanas.js
 const mongoose = require('mongoose');
 
 const campanaSchema = new mongoose.Schema({

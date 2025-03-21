@@ -1,3 +1,4 @@
+// src/models/Filial.js
 const mongoose = require('mongoose');
 
 const filialSchema = new mongoose.Schema({

@@ -1,3 +1,4 @@
+// src/models/ServicioFinanciado.js
 const mongoose = require('mongoose');
 
 const servicioFinanciadoSchema = new mongoose.Schema({

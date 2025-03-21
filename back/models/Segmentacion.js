@@ -1,3 +1,4 @@
+// src/models/Segmentacion.js
 const mongoose = require('mongoose');
 
 const segmentacionSchema = new mongoose.Schema({

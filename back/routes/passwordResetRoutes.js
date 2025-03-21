@@ -4,6 +4,13 @@ const passwordResetController = require('../controllers/passwordResetController'
 
 /**
  * @swagger
+ * tags:
+ *   name: Restablecimiento de Contraseña
+ *   description: Endpoints para gestionar restablecimiento de contraseñas.
+ */
+
+/**
+ * @swagger
  * /password-resets:
  *   post:
  *     summary: Crear un registro de restablecimiento de contraseña

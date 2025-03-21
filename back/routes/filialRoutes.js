@@ -4,6 +4,13 @@ const filialController = require('../controllers/filialController');
 
 /**
  * @swagger
+ * tags:
+ *   name: Filiales
+ *   description: Endpoints para gestionar filiales.
+ */
+
+/**
+ * @swagger
  * /filiales:
  *   get:
  *     summary: Obtener todas las filiales

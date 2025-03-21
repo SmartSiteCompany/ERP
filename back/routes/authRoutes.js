@@ -6,6 +6,13 @@ const userController = require('../controllers/userController');
 
 /**
  * @swagger
+ * tags:
+ *   name: Autenticación
+ *   description: Endpoints para gestionar autenticación.
+ */
+
+/**
+ * @swagger
  * /auth/registro:
  *   post:
  *     summary: Registrar un nuevo usuario

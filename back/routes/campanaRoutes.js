@@ -4,6 +4,13 @@ const campaignController = require('../controllers/campanaController');
 
 /**
  * @swagger
+ * tags:
+ *   name: Campañas
+ *   description: Endpoints para gestionar campañas.
+ */
+
+/**
+ * @swagger
  * /change-logs/{id}:
  *   delete:
  *     summary: Eliminar un registro de cambio.

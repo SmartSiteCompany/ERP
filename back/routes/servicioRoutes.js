@@ -54,7 +54,7 @@ router.get('/:id', servicioController.obtenerServicioFinanciadoPorId);
 
 /**
  * @swagger
- * /servicios-financiados:
+ * /servicios:
  *   post:
  *     summary: Crear un nuevo servicio financiado.
  *     tags: [Servicios Financiados]

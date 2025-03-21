@@ -12,6 +12,7 @@ const cotizacionRoutes = require("./routes/cotizacionRoutes");
 const servicioRoutes = require("./routes/servicioRoutes");
 const pagoRoutes = require("./routes/pagoRoutes");
 const estadoCuentaRoutes = require("./routes/estadoCuentaRoutes");
+const pdfRoutes = require('./routes/pdfRoutes'); 
 
 require("dotenv").config();
 const port = process.env.PORT || 3000;
@@ -394,6 +395,7 @@ app.use("/cotizaciones", cotizacionRoutes);
 app.use("/servicios", servicioRoutes);
 app.use("/pagos", pagoRoutes);
 app.use("/estados-cuenta", estadoCuentaRoutes);
+app.use('/api', pdfRoutes);
 
 // Rutas protegidas
 app.use("/users", userRoutes);

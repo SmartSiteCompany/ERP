@@ -21,11 +21,11 @@ const app = express();
 app.use(express.json());
 
 //Conexión a MongoDB
-/*require("./config/db");
+require("./config/db");
 mongoose.connect("mongodb://localhost:27017/SSC_intCRM", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-});*/
+});
 
 // Cors
 const cors = require('cors');

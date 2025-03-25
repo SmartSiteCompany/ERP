@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const registro = async (req, res) => {
-  const { name, apellidos, email, password } = req.body;
+  const { name, apellidos, email, password, area } = req.body;
 
   try {
     // Verificar si el usuario ya existe
@@ -14,7 +14,7 @@ const registro = async (req, res) => {
     }
 
     // Crear el nuevo usuario
-    const usuario = new User({ name, apellidos, email, password });
+    const usuario = new User({ name, apellidos, email, password, area });
     await usuario.save();
 
     // Generar el token JWT

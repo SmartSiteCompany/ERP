@@ -1,4 +1,4 @@
-const Event = require('../models/Evento');
+const Event = require('../models/Eventos');
 
 // Obtener todos los eventos
 const obtenerEventos = async(req, res) => {

@@ -11,7 +11,7 @@ const servicioController = require('../controllers/servicioController');
 
 /**
  * @swagger
- * /servicios-financiados:
+ * /servicios:
  *   get:
  *     summary: Obtener todos los servicios financiados.
  *     tags: [Servicios Financiados]
@@ -29,7 +29,7 @@ router.get('/', servicioController.obtenerServiciosFinanciados);
 
 /**
  * @swagger
- * /servicios-financiados/{id}:
+ * /servicios/{id}:
  *   get:
  *     summary: Obtener un servicio financiado por su ID.
  *     tags: [Servicios Financiados]

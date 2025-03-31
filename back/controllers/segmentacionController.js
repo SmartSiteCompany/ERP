@@ -1,4 +1,4 @@
-const Segmentation = require('../models/segmentation');
+const Segmentation = require('../models/Segmentacion');
 
 // Obtener todas las segmentaciones
 const obtenerSegmentaciones = async (req, res) => {

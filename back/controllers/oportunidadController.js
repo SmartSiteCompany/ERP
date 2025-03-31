@@ -1,4 +1,4 @@
-const Opportunity = require('../models/oportunidad'); 
+const Opportunity = require('../models/Oportunidades'); 
 
 // Obtener todas las oportunidades
 const obtenerOportunidades = async (req, res) => {

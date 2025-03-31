@@ -13,6 +13,13 @@ const servicioRoutes = require("./routes/servicioRoutes");
 const pagoRoutes = require("./routes/pagoRoutes");
 const estadoCuentaRoutes = require("./routes/estadoCuentaRoutes");
 const pdfRoutes = require('./routes/pdfRoutes'); 
+const eventoRoutes = require('./routes/eventoRoutes');
+const feedbackRoutes = require('./routes/feedbackRoutes');
+const interaccionRoutes = require('./routes/interaccionRoutes');
+const notaRoutes = require('./routes/notaRoutes');
+const oportunidadRoutes = require('./routes/oportunidadRoutes');
+const segmentacionRoutes = require('./routes/segmentacionRoutes');
+const tareaRoutes = require('./routes/tareaRoutes');
 
 require("dotenv").config();
 const port = process.env.PORT || 6000;
@@ -396,6 +403,13 @@ app.use("/servicios", servicioRoutes);
 app.use("/pagos", pagoRoutes);
 app.use("/estados-cuenta", estadoCuentaRoutes);
 app.use('/api', pdfRoutes);
+app.use('/eventos', eventoRoutes);
+app.use('/feedbacks', feedbackRoutes);
+app.use('/interacciones', interaccionRoutes);
+app.use('/notas', notaRoutes);
+app.use('/oportunidades', oportunidadRoutes);
+app.use('/segmentaciones', segmentacionRoutes);
+app.use('/tareas', tareaRoutes);
 
 // Rutas protegidas
 app.use("/users", userRoutes);

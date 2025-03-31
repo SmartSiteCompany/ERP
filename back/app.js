@@ -15,7 +15,7 @@ const estadoCuentaRoutes = require("./routes/estadoCuentaRoutes");
 const pdfRoutes = require('./routes/pdfRoutes'); 
 
 require("dotenv").config();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 6000;
 const mongoURI = process.env.MONGODB_URI;
 
 const app = express();
@@ -400,7 +400,7 @@ app.use('/api', pdfRoutes);
 // Rutas protegidas
 app.use("/users", userRoutes);
 
-const PORT = 3000;
+const PORT = 6000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

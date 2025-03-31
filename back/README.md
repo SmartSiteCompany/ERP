@@ -17,8 +17,8 @@ Código
 - npm install -y
 - npm update 
 - node app.js / node start 
-- Click en el servidor creado Servidor corriendo en http://localhost:3000
-- Ingresar al URL http://localhost:3000/api-docs
+- Click en el servidor creado Servidor corriendo en http://localhost:8000
+- Ingresar al URL http://localhost:8000/api-docs
 
 * Swagger permite la interaccion directa con las solicitudes GET/POST/DELETE/PUT
 
@@ -35,5 +35,5 @@ JWT_SECRET=sec_key
 JWT_EXPIRES_IN=1h
 EMAIL_USER=correo@gmail.com
 EMAIL_PASSWORD=password
-PORT=3000
+PORT=8000
 ´´´

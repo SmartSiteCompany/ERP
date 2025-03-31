@@ -30,7 +30,7 @@ mongoose.connect("mongodb://localhost:27017/SSC_intCRM", {
 
 // Cors
 const cors = require('cors');
-app.use(cors({ origin: 'http://localhost:3000' })); 
+app.use(cors({ origin: 'http://localhost:8000' })); 
 
 // Configuración de Swagger
 const swaggerOptions = {
@@ -41,7 +41,7 @@ const swaggerOptions = {
       version: "1.0.0",
       description: "Documentación de la API para el sistema de gestión de clientes y filiales.",
     },
-    servers: [{ url: "http://localhost:3000" }],
+    servers: [{ url: "http://localhost:8000" }],
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -400,7 +400,7 @@ app.use('/api', pdfRoutes);
 // Rutas protegidas
 app.use("/users", userRoutes);
 
-const PORT = 6000;
+const PORT = 8000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

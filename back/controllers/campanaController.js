@@ -1,4 +1,4 @@
-const Campaign = require('../models/Campaign');
+const Campaign = require('../models/Campanas');
 
 // Obtener todas las campañas
 const obtenerCampaigns = async (req, res) => {

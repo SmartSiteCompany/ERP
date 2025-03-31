@@ -39,7 +39,7 @@ const swaggerOptions = {
             type: "object",
             properties: {
               nombre_filial: { type: "string" },
-              cotizaciones: { type: "string" },
+              descripcion_filial: { type: "string" },
             },
           },
           //Password Reset
@@ -126,7 +126,7 @@ const swaggerOptions = {
               forma_pago: { type: "string", description: "Forma de pago (Contado, Financiado, etc.)." },
               precio_venta: { type: "number", description: "Precio de venta del servicio." },
               anticipo_solicitado: { type: "number", description: "Anticipo solicitado." },
-              filial: { type: "string", description: "Filial asociada a la cotización." },
+              filial_id: { type: "string", description: "Filial asociada a la cotización." },
               cliente_id: { type: "string", description: "ID del cliente asociado a la cotización." },
               detalles: {
                 type: "array",

@@ -68,7 +68,7 @@ router.get('/:id', cotizacionController.obtenerCotizacionPorId);
  *             forma_pago: "Financiado"
  *             precio_venta: 5000
  *             anticipo_solicitado: 1000
- *             filial: "Filial A"
+ *             filial_id: "64f1a2b3c4d5e6f7g8h9i0k"
  *             cliente_id: "64f1a2b3c4d5e6f7g8h9i0j"
  *             detalles:
  *               - descripcion: "Instalación de cámaras"

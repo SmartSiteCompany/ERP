@@ -32,6 +32,8 @@ const userController = require('../controllers/userController');
  *                 type: string
  *               password:
  *                 type: string
+ *               area:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Usuario registrado exitosamente

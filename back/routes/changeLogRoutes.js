@@ -11,20 +11,21 @@ const changeLogController = require('../controllers/changeLogController');
 
 /**
  * @swagger
- * /change-logs:
+ * /campanas:
  *   get:
- *     summary: Obtener todos los registros de cambios.
- *     tags: [ChangeLogs]
+ *     summary: Obtener todas las campañas.
+ *     tags: [Campañas]
  *     responses:
  *       200:
- *         description: Lista de registros de cambios obtenida exitosamente.
+ *         description: Lista de campañas obtenida exitosamente.
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/ChangeLog'
+ *                 $ref: '#/components/schemas/Campana'
  */
+
 router.get('/', changeLogController.obtenerChangeLogs);
 
 /**

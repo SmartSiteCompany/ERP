@@ -24,7 +24,7 @@ const segmentacionRoutes = require('./routes/segmentacionRoutes');
 const tareaRoutes = require('./routes/tareaRoutes');
 
 require("dotenv").config();
-const port = process.env.PORT || 6000;
+const port = process.env.PORT || 8000;
 const mongoURI = process.env.MONGODB_URI;
 
 const app = express();

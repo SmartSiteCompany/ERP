@@ -1,38 +1,34 @@
-import { useTodo } from '../hook/useTodo';
-import { TodoAdd } from './TodoAdd';
-import { TodoList } from './TodoList';
+import { TodoList } from "./TodoList"
+import { TodoAdd } from "./TodoAdd"
+import { useTodo } from "../hook/useTodo"
 
 
 export const TodoApp = () => {
 
-    const { todos, todosCount, pendingTodosCount, handleDeleteTodo, handleToggleTodo, handleNewTodo } = useTodos();
-    
+    const { todos, todosCount, pendientes, HandleNewTodo, HandleRemoveTodo, HandleToggleTodo } = useTodo();
+
+
     return (
-        <>
-            <h1 className=' mt-5'>TodoApp: { todosCount }, <small>pendientes: { pendingTodosCount }</small> </h1>
-            <hr />
+    <>
+        <div className="mt-5">
 
-            <div className="row">
-                <div className="col-7">
-                    <TodoList
-                        todos={ todos } 
-                        onDeleteTodo={ handleDeleteTodo } 
-                        onToggleTodo={ handleToggleTodo }
-                    />
-                </div>
+        <h1>TodoApp: { todosCount }, <small>pendientes: {pendientes}</small> </h1>
+        <hr/>
+        <div className="row">
+            <div className="col-7">
 
-                <div className="col-5">
-                    <h4>Agregar TODO</h4>
-                    <hr />
-                    <TodoAdd 
-                        onNewTodo={ handleNewTodo }  
-                    />
-                </div>
+                <TodoList todos={ todos } onDeleteTodo={HandleRemoveTodo} onToggleTodo={HandleToggleTodo}/>
 
             </div>
 
-
-        
+            <div className="col-5">
+                <h4> Agregar Todo</h4>
+                <hr/>
+                    <TodoAdd onNewTodo={HandleNewTodo}/>
+                </div>
+            </div>
+        </div>
+            
         </>
-    )
-}
+        )
+    }

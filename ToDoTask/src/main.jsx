@@ -20,8 +20,8 @@ import { MainPage } from './NavBar/routers/MainPage';
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
-    {/* <StrictMode> */}
+    <StrictMode> 
       <MainPage />
-    {/* </StrictMode>, */}
+    </StrictMode>
   </BrowserRouter>
 )

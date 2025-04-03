@@ -1,10 +1,16 @@
+import { useState } from 'react';
 import { useForm } from '../hook/useForm';
 
 
 export const TodoAdd = ({ onNewTodo }) => {
-  const { description, onInputChange, onResetForm } = useForm({
+  const { username, password, email, description, onInputChange, onResetForm } = useForm({
+    username: "",
+    email: "",
+    password: "",
     description: "",
   });
+
+  const [image, setImage] = useState(null);
 
   const onFormSubmit = (event) => {
     event.preventDefault();
@@ -18,7 +24,6 @@ export const TodoAdd = ({ onNewTodo }) => {
 
     onNewTodo(newTodo);
     onResetForm();
-
   };
 
   const handleImageUpload = (e) => {
@@ -43,8 +48,8 @@ export const TodoAdd = ({ onNewTodo }) => {
         className="form-control"
         placeholder="Username"
         name="username"
-        value={description}
-        onChange={handleImageUpload}
+        value={username}
+        onChange={onInputChange}
       />
 
       <input
@@ -52,8 +57,8 @@ export const TodoAdd = ({ onNewTodo }) => {
         className="form-control mt-2"
         placeholder="correo@gmail.com"
         name="email"
-        value={description}
-        onChange={handleImageUpload}
+        value={email}
+        onChange={onInputChange}
       />
 
       <input
@@ -61,8 +66,8 @@ export const TodoAdd = ({ onNewTodo }) => {
         className="form-control mt-2"
         placeholder="Área"
         name="password"
-        value={description}
-        onChange={handleImageUpload}
+        value={password}
+        onChange={onInputChange}
       />
 
       {/* Selección de Fecha */}
@@ -74,7 +79,13 @@ export const TodoAdd = ({ onNewTodo }) => {
       {/* Subida de Imagen */}
       <h2 className="text-xl font-bold mb-4 mt-3">Subir Imagen</h2>
       <div className="mb-4">
-        <input type="file" accept="image/*" className="btn btn-primary mt-2" />
+        <input
+          type="file"
+          accept="image/*"
+          className="btn btn-primary mt-2"
+          onChange={handleImageUpload}
+        />
+        {image && <img src={image} alt="Preview" className="mt-2" width={100} />}
       </div>
 
       {/* Lista de Tareas */}
@@ -105,4 +116,3 @@ export const TodoAdd = ({ onNewTodo }) => {
     </>
   );
 };
-

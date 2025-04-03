@@ -1,13 +1,13 @@
-import { TodoApp } from "../../ToDoList/index"
-import { TodoList } from "../../ToDoList/index"
+import { UsuarioList } from "../components/UsuarioList"
+
 
 
 export const TaskPage = () => {
   return (
     <>
-        <h1 className=' mt-5'> TaskPage </h1>
-        {/* <TodoApp/> */}
-        <TodoList/>
+        <h1 className=' mt-5'> Tareas </h1>
+
+        <UsuarioList area="smart-site"/>
     </>
   )
 }

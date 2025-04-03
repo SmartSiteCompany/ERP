@@ -15,30 +15,36 @@ export const NavBar = () => {
         
         <NavLink 
         className={({ isActive }) => `nav-link ${isActive ? "active" : "" } ` }
-        to="/HomePage"
+        to="/inicio"
         >
-            HomePage
+            Inicio
         </NavLink>
 
         <NavLink
         className={({ isActive }) => `nav-link ${isActive ? "active" : "" } ` }
-        to="/TaskPage"
+        to="/tareas"
         >
-            TaskPage
+            Tareas
         </NavLink>
 
         <NavLink
         className={({ isActive }) => `nav-link ${isActive ? "active" : "" }`}
-        to="/TodoApp"
+        to="/hacer"
         >
-        TodoApp
+        Hacer Tarea
         </NavLink>
 
         <NavLink
         className={({ isActive }) => `nav-link ${isActive ? "active" : "" } ` }
-        to="/CalendarPage"
+        to="/calendario"
         >
-            CalendarPage
+            Calendario
+        </NavLink>
+        <NavLink 
+        className={ ({isActivate}) => `nav-link nav-link ${ isActivate ? 'active' : '' }`} 
+        to="/buscar"
+        >
+        Buscar
         </NavLink>
 
       </ul>

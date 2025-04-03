@@ -60,9 +60,9 @@ Bienvenido al repositorio del **Prototipo ERP NaaS**, un sistema diseñado para 
 - Creación de interfaces escalables y dinámicas.  
 
 👨‍💻 **Frontend Developer 1**  
-Flor Araceli Flores Aguilar 
+**Flor Araceli Flores Aguilar** 
 👨‍💻 **Frontend Developer 2**  
-
+**Nancy Chavez Salguero**
 ---
 
 ### 🛠 **Testing & QA**

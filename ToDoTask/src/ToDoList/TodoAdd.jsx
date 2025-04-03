@@ -1,7 +1,4 @@
-import { useForm } from '../hooks/useForm';
-import JSConfetti from 'js-confetti'
-
-const jsConfetti = new JSConfetti()
+import { useForm } from '../hook/useForm';
 
 
 export const TodoAdd = ({ onNewTodo }) => {
@@ -22,11 +19,6 @@ export const TodoAdd = ({ onNewTodo }) => {
     onNewTodo(newTodo);
     onResetForm();
 
-    // Dispara confetti al agregar una tarea
-    jsConfetti.addConfetti({
-        emojiSize: 50,
-        emojis: ['🌈', '⚡️', '💥', '✨', '💫', '🌸'],
-    });
   };
 
   const handleImageUpload = (e) => {

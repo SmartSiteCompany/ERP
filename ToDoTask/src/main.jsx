@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { BrowserRouter } from "react-router-dom";
-import { MainApp } from './09-useContext/MainApp'
+import { MainPage } from './NavBar/routers/MainPage';
 //import './08-useReducer/intro-reducer'
 //import { MultipleCustomHook } from './03-examples/MultipleCustomHook'
 //import { FormWithCustomHook } from './02-useEffect/FormWithCustomHook'
@@ -21,7 +21,7 @@ import { MainApp } from './09-useContext/MainApp'
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     {/* <StrictMode> */}
-      <MainApp />
+      <MainPage />
     {/* </StrictMode>, */}
   </BrowserRouter>
 )

@@ -1,5 +1,5 @@
-import { TodoApp } from "../08-useReducer/TodoApp"
-import { TodoList } from "../08-useReducer/TodoList"
+import { TodoApp } from "../../ToDoList/index"
+import { TodoList } from "../../ToDoList/index"
 
 
 export const TaskPage = () => {

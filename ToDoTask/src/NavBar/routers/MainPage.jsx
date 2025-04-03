@@ -1,5 +1,5 @@
 
-import { NavBar, TaskPage, HomePage, CalendarPage, TodoApp } from "./index.js"
+import { NavBar, TaskPage, HomePage, CalendarPage, TodoApp } from "../index"
 import { Routes, Route, Navigate } from "react-router-dom"
 
 

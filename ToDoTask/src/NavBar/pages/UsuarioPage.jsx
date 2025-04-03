@@ -1,22 +1,31 @@
-import { Navigate, useNavigate, useParams } from "react-router";
+import { Navigate, replace, useNavigate, useParams } from "react-router-dom"
 import { getUsuarioById } from "../helpers";
 import { useMemo } from "react";
 
+
+
 export const UsuarioPage = () => {
-  const navigate = useNavigate();
-  const { id } = useParams();
 
-  // Obtener usuario por ID
-  const user = useMemo(() => getUsuarioById(id), [id]);
+  const navigate = useNavigate()
 
-  // Si no se encuentra el usuario, redirigir a una página de error o lista
+  const {id} = useParams();
+  // Por ejemplo, si tienes una ruta como /user/:id, puedes usar useParams 
+  // para obtener el valor de id cuando el componente asociado a esa ruta se renderice:
+
+  const user = useMemo( () => getUsuarioById( id ), [ id ] )
+  //useMemo es para guardar valores,  cuando el [id] cambie vuleve a disparar "getHeroById" y lo manda al "hero"
+  //CallbackMemo es pra guardar funciones
+
+  const onNavigateBack=()=>{
+    navigate(-1);
+  }
+  //El navigate -1 regresa a la pagian anterior pero tambien puede sacarte de la app
+  
   if (!user) {
-    return <Navigate to="/inicio" />;
+    return <Navigate to='/inicio'/>
+    //esto si ponemos nombres que no esxisten en la url te redirige a la pagina comodin
   }
 
-  const onNavigateBack = () => {
-    navigate(-1);
-  };
 
   return (
     <div className="row mt-5">

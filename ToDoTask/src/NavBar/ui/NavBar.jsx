@@ -24,7 +24,28 @@ export const NavBar = () => {
         className={({ isActive }) => `nav-link ${isActive ? "active" : "" } ` }
         to="/tareas"
         >
-            Tareas
+            Todas las Tareas
+        </NavLink>
+
+        <NavLink
+        className={({ isActive }) => `nav-link ${isActive ? "active" : "" } ` }
+        to="/datax"
+        >
+            Tareas datax
+        </NavLink>
+
+        <NavLink
+        className={({ isActive }) => `nav-link ${isActive ? "active" : "" } ` }
+        to="/general"
+        >
+            Tareas GeneralSystech
+        </NavLink>
+
+        <NavLink
+        className={({ isActive }) => `nav-link ${isActive ? "active" : "" } ` }
+        to="/studiodesign"
+        >
+            Tareas StudioDesign
         </NavLink>
 
         <NavLink

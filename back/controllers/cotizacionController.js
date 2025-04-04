@@ -3,7 +3,7 @@ const Cotizacion = require('../models/Cotizacion');
 // Obtener todas las cotizaciones
 const obtenerCotizaciones = async (req, res) => {
   try {
-    const cotizaciones = await Cotizacion.find().populate('cliente_id');
+    const cotizaciones = await Cotizacion.find().populate('cliente_id', 'filial_id');
     res.json(cotizaciones);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -13,7 +13,7 @@ const obtenerCotizaciones = async (req, res) => {
 // Obtener una cotización por ID
 const obtenerCotizacionPorId = async (req, res) => {
   try {
-    const cotizacion = await Cotizacion.findById(req.params.id).populate('cliente_id');
+    const cotizacion = await Cotizacion.findById(req.params.id).populate('cliente_id', 'filial_id');
     if (!cotizacion) {
       return res.status(404).json({ error: 'Cotización no encontrada' });
     }

@@ -6,7 +6,7 @@ const cotizacionSchema = new mongoose.Schema({
   forma_pago: { type: String, enum: ['Financiado', 'Contado'], required: true },
   precio_venta: { type: Number, required: true },
   anticipo_solicitado: { type: Number, required: true },
-  filial_id: { type: String, required: true },
+  filial_id: { type: mongoose.Schema.Types.ObjectId,ref: 'Filial', required: true },// Modificacion de filial en cotizacion
   cliente_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Cliente', required: true },
   detalles: [
     {

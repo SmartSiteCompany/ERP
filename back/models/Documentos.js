@@ -6,7 +6,9 @@ const documentoSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
   tipo: { type: String, enum: ['contrato', 'factura', 'propuesta', 'otro'], required: true },
   fecha_subida: { type: Date, default: Date.now },
-  archivo: { type: String, required: true }, // URL o referencia al archivo
+  archivo: { type: String, default: 'uploads/documents'}, // URL o referencia al archivo
+  tamaño: { type: Number, required: true }, // Tamaño del archivo en bytes
+  formato: { type: String, enum:['.pdf','.xls','.docs','cvs'], required: true }, // Formato del archivo (ej. PDF, DOCX)
 });
 
 module.exports = mongoose.model('Documento', documentoSchema);

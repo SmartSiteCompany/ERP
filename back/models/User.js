@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   area: { type: String, required: true },
   bloqueo: { type: String, default: 'activo' },
-  foto_user: { type: String, default: '' },
+  foto_user: { type: String, default: 'uploads/users/' },
   rol_user: { type: String, default: 'usuario' },
   remember_token: { type: String, default: '' },
 }, { timestamps: true });

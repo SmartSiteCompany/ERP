@@ -155,6 +155,7 @@ const swaggerOptions = {
             type: "object",
             properties: {
               _id: { type: "string", description: "ID único de la cotización." },
+              nombre_cotizacion: { type: "string", description: "Nombre de la cotización." },
               fecha_cotizacion: { type: "string", format: "date", description: "Fecha de la cotización." },
               forma_pago: { type: "string", description: "Forma de pago (Contado, Financiado, etc.)." },
               precio_venta: { type: "number", description: "Precio de venta del servicio." },
@@ -176,6 +177,7 @@ const swaggerOptions = {
               },
             },
             required: [
+              "nombre_cotizacion",
               "fecha_cotizacion",
               "forma_pago",
               "precio_venta",

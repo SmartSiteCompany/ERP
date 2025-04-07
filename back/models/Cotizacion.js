@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');
 
 const cotizacionSchema = new mongoose.Schema({
+  nombre_cotizacion: { type: String, required: true },
   fecha_cotizacion: { type: Date, default: Date.now },
   forma_pago: { type: String, enum: ['Financiado', 'Contado'], required: true },
   precio_venta: { type: Number, required: true },

@@ -77,20 +77,53 @@ const swaggerOptions = {
           Pago: {
             type: "object",
             properties: {
-              _id: { type: "string", description: "ID único del pago." },
-              cliente_id: { type: "string", description: "ID del cliente asociado al pago." },
-              servicio_id: { type: "string", description: "ID del servicio asociado al pago." },
-              fecha_pago: { type: "string", format: "date", description: "Fecha en que se realizó el pago." },
-              monto_pago: { type: "number", description: "Monto del pago realizado." },
-              saldo_pendiente: { type: "number", description: "Saldo pendiente después del pago." },
+              _id: { 
+                type: "string", 
+                description: "ID único del pago",
+                example: "60f7a2b3c4d5e6f7g8h9i0j"
+              },
+              cliente_id: { 
+                type: "string", 
+                description: "ID del cliente asociado al pago",
+                example: "60f7a2b3c4d5e6f7g8h9i0k" 
+              },
+              servicio_id: { 
+                type: "string", 
+                description: "ID del servicio asociado al pago",
+                example: "60f7a2b3c4d5e6f7g8h9i0l" 
+              },
+              fecha_pago: { 
+                type: "string", 
+                format: "date-time", 
+                description: "Fecha en que se realizó el pago (se autocompleta si no se envía)",
+                example: "2023-07-20T12:00:00Z" 
+              },
+              monto_pago: { 
+                type: "number", 
+                minimum: 0,
+                description: "Monto del pago realizado (debe ser positivo)",
+                example: 1500 
+              },
+              saldo_pendiente: { 
+                type: "number", 
+                minimum: 0,
+                description: "Saldo pendiente después del pago (calculado automáticamente)",
+                example: 3500 
+              },
+              // Campo opcional
+              nuevo_pago_semanal: {
+                type: "number",
+                minimum: 0,
+                description: "Nuevo monto de pago semanal (opcional, para ajustes)",
+                example: 500
+              }
             },
             required: [
               "cliente_id",
               "servicio_id",
-              "fecha_pago",
               "monto_pago",
-              "saldo_pendiente",
-            ],
+              "saldo_pendiente"
+            ]
           },
           // Estado de cuenta
           EstadoCuenta: {

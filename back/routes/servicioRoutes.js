@@ -145,4 +145,107 @@ router.put('/:id', servicioController.actualizarServicioFinanciado);
  */
 router.delete('/:id', servicioController.eliminarServicioFinanciado);
 
+/**
+ * @swagger
+ * /servicios/cotizacion/{cotizacionId}:
+ *   get:
+ *     summary: Obtener servicios financiados por ID de cotización.
+ *     tags: [Servicios Financiados]
+ *     parameters:
+ *       - in: path
+ *         name: cotizacionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la cotización relacionada.
+ *     responses:
+ *       200:
+ *         description: Servicio financiado encontrado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServicioFinanciado'
+ *       404:
+ *         description: No se encontró servicio financiado para esta cotización.
+ */
+router.get('/cotizacion/:cotizacionId', servicioController.obtenerServicioPorCotizacionId);
+
+/**
+ * @swagger
+ * /servicios/{id}/pagos:
+ *   get:
+ *     summary: Obtener historial de pagos de un servicio
+ *     tags: [Servicios Financiados]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del servicio financiado
+ *     responses:
+ *       200:
+ *         description: Lista de pagos del servicio
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Pago'
+ *       404:
+ *         description: No se encontraron pagos para este servicio
+ */
+router.get('/:id/pagos', servicioController.obtenerHistorialPagos);
+
+/**
+ * @swagger
+ * /servicios/{id}/registrar-pago:
+ *   post:
+ *     summary: Registrar un nuevo pago para el servicio
+ *     tags: [Servicios Financiados]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del servicio financiado
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - monto_pago
+ *             properties:
+ *               monto_pago:
+ *                 type: number
+ *                 description: Monto del pago realizado
+ *               nuevo_pago_semanal:
+ *                 type: number
+ *                 description: Nuevo monto de pago semanal (opcional)
+ *           example:
+ *             monto_pago: 1500
+ *             nuevo_pago_semanal: 500
+ *     responses:
+ *       200:
+ *         description: Pago registrado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 servicio:
+ *                   $ref: '#/components/schemas/ServicioFinanciado'
+ *                 pago:
+ *                   $ref: '#/components/schemas/Pago'
+ *                 msg:
+ *                   type: string
+ *       400:
+ *         description: Monto excede el saldo pendiente
+ *       404:
+ *         description: Servicio no encontrado
+ */
+
 module.exports = router;

@@ -1,4 +1,4 @@
-const Document = require('../models/Documento');
+const Document = require('../models/Documentos');
 
 // Obtener todos los documentos
 const obtenerDocumentos = async (req, res) => {

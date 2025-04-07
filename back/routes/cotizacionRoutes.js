@@ -65,6 +65,7 @@ router.get('/:id', cotizacionController.obtenerCotizacionPorId);
  *           schema:
  *             $ref: '#/components/schemas/Cotizacion'
  *           example:
+ *             nombre_cotizacion: "Cotización 1"
  *             forma_pago: "Financiado"
  *             precio_venta: 5000
  *             anticipo_solicitado: 1000

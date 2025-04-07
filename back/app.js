@@ -22,6 +22,7 @@ const notaRoutes = require('./routes/notaRoutes');
 const oportunidadRoutes = require('./routes/oportunidadRoutes');
 const segmentacionRoutes = require('./routes/segmentacionRoutes');
 const tareaRoutes = require('./routes/tareaRoutes');
+const documentoRoutes = require('./routes/documentoRoutes');
 
 require("dotenv").config();
 const port = process.env.PORT || 8000;
@@ -63,6 +64,7 @@ app.use('/notas', notaRoutes);
 app.use('/oportunidades', oportunidadRoutes);
 app.use('/segmentaciones', segmentacionRoutes);
 app.use('/tareas', tareaRoutes);
+app.use('/documentos', documentoRoutes);
 
 // Rutas protegidas
 app.use("/users", userRoutes);

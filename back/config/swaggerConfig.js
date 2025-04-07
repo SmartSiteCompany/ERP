@@ -161,6 +161,7 @@ const swaggerOptions = {
               precio_venta: { type: "number", description: "Precio de venta del servicio." },
               anticipo_solicitado: { type: "number", description: "Anticipo solicitado." },
               filial_id: { type: "string", description: "Filial asociada a la cotización." },
+              servicio_id: { type: "string", description: "ID del servicio asociado a la cotización." },
               cliente_id: { type: "string", description: "ID del cliente asociado a la cotización." },
               detalles: {
                 type: "array",

@@ -71,6 +71,7 @@ router.get('/:id', cotizacionController.obtenerCotizacionPorId);
  *             anticipo_solicitado: 1000
  *             filial_id: "64f1a2b3c4d5e6f7g8h9i0k"
  *             cliente_id: "64f1a2b3c4d5e6f7g8h9i0j"
+ *             servicio_id: "64f1a2b3c4d5e6f7g8h9i0l"
  *             detalles:
  *               - descripcion: "Instalación de cámaras"
  *                 costo_materiales: 2000

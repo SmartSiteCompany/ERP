@@ -6,7 +6,7 @@ const documentoSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
   tipo: { type: String, enum: ['contrato', 'factura', 'propuesta', 'otro'], required: true },
   fecha_subida: { type: Date, default: Date.now },
-  archivo: { type: Document, required: true }, // URL o referencia al archivo
+  archivo: { type: String, required: true }, // URL o referencia al archivo
 });
 
 module.exports = mongoose.model('Documento', documentoSchema);

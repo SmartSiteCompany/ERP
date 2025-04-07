@@ -12,6 +12,8 @@ const servicioFinanciadoSchema = new mongoose.Schema({
   fecha_termino: { type: Date },
   pago_semanal: { type: Number, required: true },
   saldo_restante: { type: Number, required: true },
+  //calculo de IVA 
+  //Precio total = Precio venta + IVA
 });
 
 module.exports = mongoose.model('ServicioFinanciado', servicioFinanciadoSchema);

@@ -19,6 +19,17 @@ const cotizacionSchema = new mongoose.Schema({
       utilidad_esperada: { type: Number, required: true }, // precio_venta - inversion
     },
   ],
+  //Si es financiado agregar 
+  /**
+   * Precio total = Precio venta + IVA
+   * Semanas = Precio total / Pago semanal
+   * Anticipo = Precio total * Anticipo solicitado
+   * Restante = Precio total - Anticipo
+   * Pago semanal = Restante / Semanas
+   * IVA = Precio venta * 0.19
+   * Total = Precio venta + IVA
+   * Total con IVA = Precio venta + IVA
+   */
 });
 
 module.exports = mongoose.model('Cotizacion', cotizacionSchema);

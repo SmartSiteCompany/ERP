@@ -1,41 +1,41 @@
 import { useState, useCallback } from 'react';
 import axios from 'axios';
 
-const CotizacionService = () => {
+const NotaService = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const baseURL = 'http://localhost:8000/cotizaciones';
+    const baseURL = 'http://localhost:8000/notas';
 
-    const obtenerCotizaciones = useCallback(async () => {
+    const obtenerNotas = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
             const response = await axios.get(`${baseURL}`);
+            console.log("Respuesta de la API:", response.data);
             setLoading(false);
             return response.data;
         } catch (err) {
-            setError(err);
+            setError(err.response?.data?.error || err.message);
             setLoading(false);
             throw err;
         }
-    }, []); // <- Se ejecuta solo una vez y mantiene la referencia
+    }, []);
 
-    const crearCotizacion = async (cotizacion) => {
+    const crearNota = useCallback(async (nota) => {
         setLoading(true);
         setError(null);
         try {
-          const response = await axios.post(`${baseURL}`, cotizacion);
-          setLoading(false);
-          return response.data;
+            const response = await axios.post(`${baseURL}`, nota);
+            setLoading(false);
+            return response.data;
         } catch (err) {
-          console.error('Error completo:', err.response?.data || err.message);
-          setError(err.response?.data || err.message);
-          setLoading(false);
-          throw err.response?.data || err;
+            setError(err.response?.data?.error || err.message);
+            setLoading(false);
+            throw err;
         }
-      };
+    }, []);
 
-    const obtenerCotizacionPorId = async (id) => {
+    const obtenerNotaPorId = useCallback(async (id) => {
         setLoading(true);
         setError(null);
         try {
@@ -43,27 +43,27 @@ const CotizacionService = () => {
             setLoading(false);
             return response.data;
         } catch (err) {
-            setError(err);
+            setError(err.response?.data?.error || err.message);
             setLoading(false);
             throw err;
         }
-    };
+    }, []);
 
-    const actualizarCotizacion = async (id, cotizacion) => {
+    const actualizarNota = useCallback(async (id, nota) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.put(`${baseURL}/${id}`, cotizacion);
+            const response = await axios.put(`${baseURL}/${id}`, nota);
             setLoading(false);
             return response.data;
         } catch (err) {
-            setError(err);
+            setError(err.response?.data?.error || err.message);
             setLoading(false);
             throw err;
         }
-    };
+    }, []);
 
-    const eliminarCotizacion = async (id) => {
+    const eliminarNota = useCallback(async (id) => {
         setLoading(true);
         setError(null);
         try {
@@ -71,21 +71,21 @@ const CotizacionService = () => {
             setLoading(false);
             return response.data;
         } catch (err) {
-            setError(err);
+            setError(err.response?.data?.error || err.message);
             setLoading(false);
             throw err;
         }
-    };
+    }, []);
 
     return {
         loading,
         error,
-        obtenerCotizaciones,
-        crearCotizacion,
-        obtenerCotizacionPorId,
-        actualizarCotizacion,
-        eliminarCotizacion,
+        obtenerNotas,
+        crearNota,
+        obtenerNotaPorId,
+        actualizarNota,
+        eliminarNota,
     };
 };
 
-export default CotizacionService;
+export default NotaService;

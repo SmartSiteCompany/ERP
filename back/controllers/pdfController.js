@@ -1,7 +1,6 @@
 const PDFDocument = require('pdfkit');
 const { isValidObjectId } = require('mongoose');
 const Cotizacion = require('../models/Cotizacion'); 
-const ServicioFinanciado = require('../models/ServicioFinanciado');
 
 /**
  * Genera un PDF que combina la información de una cotización y un servicio financiado.

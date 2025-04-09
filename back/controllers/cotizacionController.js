@@ -5,9 +5,17 @@ const Pago = require('../models/Pago');
 // Operaciones CRUD básicas para cotizaciones
 const obtenerCotizaciones = async (req, res) => {
   try {
-    const cotizaciones = await Cotizacion.find()
-      .populate('cliente')
-      .populate('filial', 'nombre');
+    const { estado_servicio, forma_pago } = req.query;
+    
+    const filtro = {};
+    if (estado_servicio) filtro.estado_servicio = estado_servicio;
+    if (forma_pago) filtro.forma_pago = forma_pago;
+
+    const cotizaciones = await Cotizacion.find(filtro)
+      .populate('cliente_id', 'nombre email')
+      .populate('filial_id', 'nombre')
+      .sort({ fecha_cotizacion: -1 });
+
     res.json(cotizaciones);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -17,8 +25,8 @@ const obtenerCotizaciones = async (req, res) => {
 const obtenerCotizacionPorId = async (req, res) => {
   try {
     const cotizacion = await Cotizacion.findById(req.params.id)
-      .populate('cliente')
-      .populate('filial', 'nombre');
+      .populate('cliente_id', 'nombre email telefono')
+      .populate('filial_id', 'nombre direccion');
       
     if (!cotizacion) {
       return res.status(404).json({ error: 'Cotización no encontrada' });
@@ -31,21 +39,56 @@ const obtenerCotizacionPorId = async (req, res) => {
 
 const crearCotizacion = async (req, res) => {
   try {
-    const cotizacion = new Cotizacion(req.body);
+    // Validación básica de datos requeridos
+    if (!req.body.detalles || req.body.detalles.length === 0) {
+      return res.status(400).json({ error: 'Debe incluir al menos un item en detalles' });
+    }
+
+    // Asignar vendedor si no viene en el request (puede venir de autenticación)
+    const cotizacionData = {
+      ...req.body,
+      vendedor: req.body.vendedor || req.user?.nombre || 'Sistema'
+    };
+
+    const cotizacion = new Cotizacion(cotizacionData);
     await cotizacion.save();
-    res.status(201).json(cotizacion);
+    
+    // Populate para devolver datos completos
+    const cotizacionCreada = await Cotizacion.findById(cotizacion._id)
+      .populate('cliente_id', 'nombre email')
+      .populate('filial_id', 'nombre');
+
+    res.status(201).json(cotizacionCreada);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ 
+      error: error.message,
+      details: error.errors // Opcional: devolver detalles de validación
+    });
   }
 };
 
 const actualizarCotizacion = async (req, res) => {
   try {
+    // Bloquear actualización si el estado no lo permite
+    const cotizacionExistente = await Cotizacion.findById(req.params.id);
+    if (!cotizacionExistente) {
+      return res.status(404).json({ error: 'Cotización no encontrada' });
+    }
+
+    if (cotizacionExistente.estado === 'Completada') {
+      return res.status(400).json({ error: 'No se puede modificar una cotización completada' });
+    }
+
     const cotizacion = await Cotizacion.findByIdAndUpdate(
       req.params.id, 
       req.body, 
-      { new: true, runValidators: true }
-    );
+      { 
+        new: true, 
+        runValidators: true 
+      }
+    )
+    .populate('cliente_id', 'nombre email')
+    .populate('filial_id', 'nombre');
     
     if (!cotizacion) {
       return res.status(404).json({ error: 'Cotización no encontrada' });
@@ -58,13 +101,20 @@ const actualizarCotizacion = async (req, res) => {
 
 const eliminarCotizacion = async (req, res) => {
   try {
-    const cotizacion = await Cotizacion.findByIdAndDelete(req.params.id);
+    const cotizacion = await Cotizacion.findById(req.params.id);
     
     if (!cotizacion) {
       return res.status(404).json({ error: 'Cotización no encontrada' });
     }
+
+    // Validar que no tenga servicios asociados
+    if (cotizacion.estado_servicio !== 'Pendiente') {
+      return res.status(400).json({ 
+        error: 'No se puede eliminar una cotización con servicios activos' 
+      });
+    }
     
-    // Opcional: Eliminar pagos asociados si existen
+    await Cotizacion.findByIdAndDelete(req.params.id);
     await Pago.deleteMany({ cotizacion_id: cotizacion._id });
     
     res.json({ message: 'Cotización eliminada correctamente' });
@@ -73,7 +123,7 @@ const eliminarCotizacion = async (req, res) => {
   }
 };
 
-// Operaciones de servicio financiado
+// Operaciones de servicio
 const activarServicio = async (req, res) => {
   try {
     const cotizacion = await Cotizacion.findById(req.params.id);
@@ -83,19 +133,34 @@ const activarServicio = async (req, res) => {
     }
     
     if (cotizacion.estado !== 'Aprobada') {
-      return res.status(400).json({ error: 'La cotización debe estar aprobada para activar el servicio' });
+      return res.status(400).json({ 
+        error: 'La cotización debe estar aprobada para activar el servicio' 
+      });
     }
     
-    if (cotizacion.estadoServicio !== 'Pendiente') {
-      return res.status(400).json({ error: 'El servicio ya ha sido activado previamente' });
+    if (cotizacion.estado_servicio !== 'Pendiente') {
+      return res.status(400).json({ 
+        error: 'El servicio ya ha sido activado previamente' 
+      });
     }
     
     // Actualizar para activar el servicio
-    cotizacion.estadoServicio = 'Activo';
-    cotizacion.fechaInicioServicio = new Date();
+    cotizacion.estado_servicio = 'EnProceso';
+    cotizacion.fecha_inicio_servicio = new Date();
+    
+    // Si es financiado, establecer fecha de inicio en financiamiento
+    if (cotizacion.forma_pago === 'Financiado' && cotizacion.financiamiento) {
+      cotizacion.financiamiento.fecha_inicio = new Date();
+    }
     
     await cotizacion.save();
-    res.json(cotizacion);
+    
+    // Devolver cotización actualizada con relaciones
+    const cotizacionActualizada = await Cotizacion.findById(cotizacion._id)
+      .populate('cliente_id', 'nombre email')
+      .populate('filial_id', 'nombre');
+      
+    res.json(cotizacionActualizada);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -109,14 +174,26 @@ const completarServicio = async (req, res) => {
       return res.status(404).json({ error: 'Cotización no encontrada' });
     }
     
-    if (cotizacion.estadoServicio !== 'Activo') {
-      return res.status(400).json({ error: 'El servicio no está activo' });
+    if (cotizacion.estado_servicio !== 'EnProceso') {
+      return res.status(400).json({ 
+        error: 'El servicio debe estar en proceso para completarlo' 
+      });
     }
     
-    cotizacion.estadoServicio = 'Completado';
-    cotizacion.fechaFinServicio = new Date();
+    // Validar que no queden pagos pendientes para financiado
+    if (cotizacion.forma_pago === 'Financiado' && 
+        cotizacion.financiamiento.saldo_restante > 0) {
+      return res.status(400).json({ 
+        error: 'No se puede completar el servicio con saldo pendiente' 
+      });
+    }
+    
+    cotizacion.estado_servicio = 'Completado';
+    cotizacion.estado = 'Completada';
+    cotizacion.fecha_fin_servicio = new Date();
     
     await cotizacion.save();
+    
     res.json(cotizacion);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -126,45 +203,56 @@ const completarServicio = async (req, res) => {
 // Operaciones de pagos para servicios financiados
 const registrarPago = async (req, res) => {
   try {
+    const { monto, metodo_pago } = req.body;
+    
+    if (!monto || monto <= 0) {
+      return res.status(400).json({ error: 'Monto de pago inválido' });
+    }
+
     const cotizacion = await Cotizacion.findById(req.params.id);
     
     if (!cotizacion) {
       return res.status(404).json({ error: 'Cotización no encontrada' });
     }
     
-    if (cotizacion.tipo !== 'Financiado') {
-      return res.status(400).json({ error: 'Solo se pueden registrar pagos para servicios financiados' });
+    if (cotizacion.forma_pago !== 'Financiado') {
+      return res.status(400).json({ 
+        error: 'Solo se pueden registrar pagos para servicios financiados' 
+      });
     }
     
-    if (cotizacion.estadoServicio !== 'Activo') {
-      return res.status(400).json({ error: 'El servicio no está activo' });
+    if (cotizacion.estado_servicio !== 'EnProceso') {
+      return res.status(400).json({ 
+        error: 'El servicio debe estar activo para registrar pagos' 
+      });
     }
-    
-    const { monto } = req.body;
     
     // Crear registro de pago
     const pago = new Pago({
       cotizacion_id: cotizacion._id,
-      cliente_id: cotizacion.cliente,
+      cliente_id: cotizacion.cliente_id,
       monto,
+      metodo_pago: metodo_pago || 'Efectivo',
       fecha: new Date()
     });
     
     await pago.save();
     
     // Actualizar saldo en la cotización
-    cotizacion.financiamiento.saldoRestante -= monto;
+    cotizacion.financiamiento.saldo_restante -= monto;
     
     // Verificar si el servicio ha sido liquidado
-    if (cotizacion.financiamiento.saldoRestante <= 0) {
-      cotizacion.estadoServicio = 'Completado';
-      cotizacion.fechaFinServicio = new Date();
+    if (cotizacion.financiamiento.saldo_restante <= 0) {
+      cotizacion.estado_servicio = 'Completado';
+      cotizacion.fecha_fin_servicio = new Date();
     }
     
     await cotizacion.save();
     
     res.json({
-      cotizacion,
+      cotizacion: await Cotizacion.findById(cotizacion._id)
+        .populate('cliente_id', 'nombre')
+        .populate('filial_id', 'nombre'),
       pago
     });
   } catch (error) {
@@ -174,10 +262,23 @@ const registrarPago = async (req, res) => {
 
 const obtenerHistorialPagos = async (req, res) => {
   try {
+    const cotizacion = await Cotizacion.findById(req.params.id);
+    if (!cotizacion) {
+      return res.status(404).json({ error: 'Cotización no encontrada' });
+    }
+
     const pagos = await Pago.find({ cotizacion_id: req.params.id })
       .sort({ fecha: -1 });
       
-    res.json(pagos);
+    res.json({
+      cotizacion: {
+        _id: cotizacion._id,
+        nombre_cotizacion: cotizacion.nombre_cotizacion,
+        precio_venta: cotizacion.precio_venta,
+        saldo_restante: cotizacion.financiamiento?.saldo_restante || 0
+      },
+      pagos
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -187,12 +288,17 @@ const obtenerHistorialPagos = async (req, res) => {
 const obtenerServiciosPorEstado = async (req, res) => {
   try {
     const { estado } = req.params;
-    const cotizaciones = await Cotizacion.find({ 
-      estadoServicio: estado,
-      tipo: 'Financiado' // Solo servicios financiados
-    })
-    .populate('cliente')
-    .populate('filial', 'nombre');
+    const { forma_pago } = req.query;
+
+    const filtro = { 
+      estado_servicio: estado,
+      ...(forma_pago && { forma_pago }) // Filtro opcional por tipo de pago
+    };
+
+    const cotizaciones = await Cotizacion.find(filtro)
+      .populate('cliente_id', 'nombre telefono')
+      .populate('filial_id', 'nombre')
+      .sort({ fecha_inicio_servicio: -1 });
     
     res.json(cotizaciones);
   } catch (error) {
@@ -201,21 +307,14 @@ const obtenerServiciosPorEstado = async (req, res) => {
 };
 
 module.exports = {
-  // Operaciones CRUD básicas
   obtenerCotizaciones,
   obtenerCotizacionPorId,
   crearCotizacion,
   actualizarCotizacion,
   eliminarCotizacion,
-  
-  // Operaciones de servicio
   activarServicio,
   completarServicio,
-  
-  // Operaciones de pagos
   registrarPago,
   obtenerHistorialPagos,
-  
-  // Consultas especializadas
   obtenerServiciosPorEstado
 };

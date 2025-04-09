@@ -18,6 +18,7 @@ const cotizacionController = require('../controllers/cotizacionController');
  *         - forma_pago
  *         - filial_id
  *         - cliente_id
+ *         - vendedor
  *         - detalles
  *       properties:
  *         _id:
@@ -25,53 +26,78 @@ const cotizacionController = require('../controllers/cotizacionController');
  *           description: ID único de la cotización
  *         nombre_cotizacion:
  *           type: string
- *           description: Nombre de la cotización
+ *           description: Nombre descriptivo de la cotización
  *         fecha_cotizacion:
  *           type: string
- *           format: date
- *           description: Fecha de creación
- *         forma_pago:
+ *           format: date-time
+ *           description: Fecha de creación automática
+ *         validoHasta:
  *           type: string
- *           enum: ["Contado", "Financiado"]
- *           description: Tipo de pago
- *         precio_venta:
- *           type: number
- *           readOnly: true
- *           description: Precio total del servicio (calculado automáticamente)
- *         anticipo_solicitado:
- *           type: number
- *           minimum: 0
- *           description: Anticipo requerido (solo financiado)
- *         filial_id:
+ *           format: date-time
+ *           description: Fecha de validez de la cotización
+ *         estado:
  *           type: string
- *           description: ID de la filial asociada
+ *           enum: ['Borrador', 'Enviada', 'Aprobada', 'Completada', 'Cancelada']
+ *           default: 'Borrador'
+ *           description: Estado del flujo de cotización
  *         cliente_id:
  *           type: string
- *           description: ID del cliente asociado
- *         estado_servicio:
+ *           description: Referencia al cliente
+ *         vendedor:
  *           type: string
- *           enum: ["Pendiente", "Activo", "Completado", "Cancelado"]
- *           default: "Pendiente"
- *           description: Estado del servicio generado
+ *           description: Nombre del vendedor responsable
+ *         filial_id:
+ *           type: string
+ *           description: Referencia a la filial/sucursal
  *         detalles:
  *           type: array
  *           items:
  *             type: object
  *             properties:
- *               descripcion: { type: "string" }
- *               costo_materiales: { type: "number", minimum: 0 }
- *               costo_mano_obra: { type: "number", minimum: 0 }
- *               inversion: { type: "number", readOnly: true }
- *               utilidad_esperada: { type: "number", minimum: 0 }
- *             required:
- *               - descripcion
- *               - costo_materiales
- *               - costo_mano_obra
+ *               descripcion:
+ *                 type: string
+ *                 description: Descripción del servicio/producto
+ *               costo_materiales:
+ *                 type: number
+ *                 minimum: 0
+ *                 description: Costo de materiales
+ *               costo_mano_obra:
+ *                 type: number
+ *                 minimum: 0
+ *                 description: Costo de mano de obra
+ *               utilidad_esperada:
+ *                 type: number
+ *                 default: 0
+ *                 description: Porcentaje de utilidad esperada
+ *               inversion:
+ *                 type: number
+ *                 readOnly: true
+ *                 description: Total calculado (materiales + mano obra)
+ *         subtotal:
+ *           type: number
+ *           readOnly: true
+ *           description: Subtotal antes de impuestos
+ *         iva:
+ *           type: number
+ *           readOnly: true
+ *           description: Monto de IVA calculado
+ *         precio_venta:
+ *           type: number
+ *           readOnly: true
+ *           description: Precio total con utilidad e impuestos
+ *         forma_pago:
+ *           type: string
+ *           enum: ['Contado', 'Financiado']
+ *           description: Tipo de pago/contrato
  *         financiamiento:
  *           type: object
  *           properties:
+ *             anticipo_solicitado:
+ *               type: number
+ *               minimum: 0
+ *               description: Anticipo requerido
  *             plazo_semanas:
- *               type: integer
+ *               type: number
  *               minimum: 1
  *               description: Plazo en semanas
  *             pago_semanal:
@@ -81,19 +107,35 @@ const cotizacionController = require('../controllers/cotizacionController');
  *             saldo_restante:
  *               type: number
  *               readOnly: true
- *               description: Saldo pendiente de pago
+ *               description: Saldo pendiente calculado
  *             fecha_inicio:
  *               type: string
- *               format: date
+ *               format: date-time
  *               description: Fecha de inicio del servicio
  *             fecha_termino:
  *               type: string
- *               format: date
+ *               format: date-time
  *               description: Fecha estimada de término
- *         pagos:
- *           type: array
- *           items:
- *             $ref: "#/components/schemas/Pago"
+ *         pagoContado:
+ *           type: object
+ *           properties:
+ *             fechaPago:
+ *               type: string
+ *               format: date-time
+ *               description: Fecha de pago completo
+ *         estado_servicio:
+ *           type: string
+ *           enum: ['Pendiente', 'EnProceso', 'Completado', 'Cancelado']
+ *           default: 'Pendiente'
+ *           description: Estado del servicio asociado
+ *         fecha_inicio_servicio:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha real de inicio
+ *         fecha_fin_servicio:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha real de finalización
  * 
  *     Pago:
  *       type: object
@@ -137,10 +179,10 @@ const cotizacionController = require('../controllers/cotizacionController');
  *     tags: [Cotizaciones]
  *     parameters:
  *       - in: query
- *         name: estado
+ *         name: estado_servicio
  *         schema:
  *           type: string
- *           enum: ["Pendiente", "Activo", "Completado", "Cancelado"]
+ *           enum: ["Pendiente", "EnProceso", "Completado", "Cancelado"]
  *         description: Filtrar por estado de servicio
  *       - in: query
  *         name: forma_pago
@@ -148,6 +190,11 @@ const cotizacionController = require('../controllers/cotizacionController');
  *           type: string
  *           enum: ["Contado", "Financiado"]
  *         description: Filtrar por tipo de pago
+ *       - in: query
+ *         name: filial_id
+ *         schema:
+ *           type: string
+ *         description: Filtrar por filial
  *     responses:
  *       200:
  *         description: Lista de cotizaciones
@@ -201,13 +248,15 @@ router.get('/:id', cotizacionController.obtenerCotizacionPorId);
  *             forma_pago: "Financiado"
  *             filial_id: "64f1a2b3c4d5e6f7g8h9i0k"
  *             cliente_id: "64f1a2b3c4d5e6f7g8h9i0j"
- *             anticipo_solicitado: 2000
+ *             vendedor: "Ana López"
+ *             validoHasta: "2023-12-31T23:59:59Z"
  *             detalles:
  *               - descripcion: "Cámara de vigilancia 4K"
  *                 costo_materiales: 1200
  *                 costo_mano_obra: 500
  *                 utilidad_esperada: 30
  *             financiamiento:
+ *               anticipo_solicitado: 2000
  *               plazo_semanas: 12
  *     responses:
  *       201:
@@ -283,7 +332,7 @@ router.delete('/:id', cotizacionController.eliminarCotizacion);
  *   post:
  *     summary: Activar servicio asociado a cotización
  *     tags: [Cotizaciones]
- *     description: Convierte una cotización en un servicio activo
+ *     description: Convierte una cotización en un servicio activo (EnProceso)
  *     parameters:
  *       - in: path
  *         name: id
@@ -342,7 +391,7 @@ router.post('/:id/completar', cotizacionController.completarServicio);
  *         required: true
  *         schema:
  *           type: string
- *           enum: ["Pendiente", "Activo", "Completado", "Cancelado"]
+ *           enum: ["Pendiente", "EnProceso", "Completado", "Cancelado"]
  *       - in: query
  *         name: forma_pago
  *         schema:

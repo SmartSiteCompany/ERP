@@ -35,8 +35,37 @@ const swaggerOptions = {
         Filial: {
           type: "object",
           properties: {
-            nombre_filial: { type: "string" },
-            descripcion_filial: { type: "string" }
+            nombre_filial: { 
+              type: "string",
+              description: "Nombre de la filial",
+              example: "DataX"
+            },
+            descripcion_filial: { 
+              type: "string",
+              description: "Descripción de la filial",
+              example: "Sucursal de desarrollo de software"
+            }
+          },
+          required: ["nombre_filial", "descripcion_filial"]
+        },
+        
+        // FilialResponse (para respuestas GET que incluyen el ID)
+        FilialResponse: {
+          type: "object",
+          properties: {
+            _id: {
+              type: "string",
+              description: "ID único de la filial",
+              example: "507f1f77bcf86cd799439011"
+            },
+            nombre_filial: { 
+              type: "string",
+              description: "Nombre de la filial"
+            },
+            descripcion_filial: { 
+              type: "string",
+              description: "Descripción de la filial"
+            }
           }
         },
         

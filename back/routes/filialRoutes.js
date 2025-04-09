@@ -25,7 +25,7 @@ const filialController = require('../controllers/filialController');
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Filial'
+ *                 $ref: '#/components/schemas/FilialResponse'
  */
 router.get('/', filialController.obtenerFiliales);
 
@@ -50,7 +50,7 @@ router.get('/', filialController.obtenerFiliales);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Filial'
+ *               $ref: '#/components/schemas/FilialResponse'
  *       404:
  *         description: Filial no encontrada
  */
@@ -70,9 +70,16 @@ router.get('/:id', filialController.obtenerFilialPorId);
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/Filial'
+ *           example:
+ *             nombre_filial: "DataX"
+ *             descripcion_filial: "Sucursal de DataX"
  *     responses:
  *       201:
  *         description: Filial creada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FilialResponse'
  *       400:
  *         description: Error en la solicitud
  */
@@ -99,9 +106,16 @@ router.post('/', filialController.crearFilial);
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/Filial'
+ *           example:
+ *             nombre_filial: "Sucursal Norte Actualizada"
+ *             descripcion_filial: "Nueva descripción para sucursal norte"
  *     responses:
  *       200:
  *         description: Filial actualizada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FilialResponse'
  *       404:
  *         description: Filial no encontrada
  */
@@ -125,6 +139,10 @@ router.put('/:id', filialController.actualizarFilial);
  *     responses:
  *       200:
  *         description: Filial eliminada correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FilialResponse'
  *       404:
  *         description: Filial no encontrada
  */

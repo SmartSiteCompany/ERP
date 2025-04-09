@@ -199,7 +199,8 @@ const swaggerOptions = {
             fecha_cotizacion: {
               type: "string",
               format: "date",
-              description: "Fecha de creación"
+              description: "Fecha de creación",
+              default: "Fecha actual"
             },
             forma_pago: {
               type: "string",
@@ -208,10 +209,12 @@ const swaggerOptions = {
             },
             precio_venta: {
               type: "number",
-              description: "Precio total del servicio"
+              description: "Precio total del servicio (calculado automáticamente)",
+              readOnly: true
             },
             anticipo_solicitado: {
               type: "number",
+              minimum: 0,
               description: "Anticipo requerido (solo financiado)"
             },
             filial_id: {
@@ -225,6 +228,7 @@ const swaggerOptions = {
             estado_servicio: {
               type: "string",
               enum: ["Pendiente", "Activo", "Completado", "Cancelado"],
+              default: "Pendiente",
               description: "Estado del servicio generado"
             },
             detalles: {
@@ -232,29 +236,54 @@ const swaggerOptions = {
               items: {
                 type: "object",
                 properties: {
-                  descripcion: { type: "string" },
-                  costo_materiales: { type: "number" },
-                  costo_mano_obra: { type: "number" },
-                  inversion: { type: "number" },
-                  utilidad_esperada: { type: "number" }
-                }
+                  descripcion: { 
+                    type: "string",
+                    description: "Descripción del item"
+                  },
+                  costo_materiales: { 
+                    type: "number",
+                    minimum: 0,
+                    description: "Costo de materiales"
+                  },
+                  costo_mano_obra: { 
+                    type: "number",
+                    minimum: 0,
+                    description: "Costo de mano de obra" 
+                  },
+                  inversion: { 
+                    type: "number",
+                    readOnly: true,
+                    description: "Calculado automáticamente (materiales + mano obra)",
+                    example: 1500
+                  },
+                  utilidad_esperada: { 
+                    type: "number",
+                    minimum: 0,
+                    description: "Porcentaje o monto de utilidad esperada" 
+                  }
+                },
+                required: ["descripcion", "costo_materiales", "costo_mano_obra"]
               }
             },
-            // Campos específicos para servicios financiados
             financiamiento: {
               type: "object",
               properties: {
                 plazo_semanas: {
                   type: "integer",
+                  minimum: 1,
                   description: "Plazo en semanas"
                 },
                 pago_semanal: {
                   type: "number",
-                  description: "Monto de pago semanal calculado"
+                  readOnly: true,
+                  description: "Monto de pago semanal calculado automáticamente",
+                  example: 250.50
                 },
                 saldo_restante: {
                   type: "number",
-                  description: "Saldo pendiente de pago"
+                  readOnly: true,
+                  description: "Saldo pendiente de pago (calculado automáticamente)",
+                  example: 2000
                 },
                 fecha_inicio: {
                   type: "string",
@@ -264,11 +293,10 @@ const swaggerOptions = {
                 fecha_termino: {
                   type: "string",
                   format: "date",
-                  description: "Fecha estimada de término"
+                  description: "Fecha estimada de término (calculada automáticamente)"
                 }
               }
             },
-            // Campos para pagos registrados
             pagos: {
               type: "array",
               items: {
@@ -280,11 +308,44 @@ const swaggerOptions = {
             "nombre_cotizacion",
             "fecha_cotizacion",
             "forma_pago",
-            "precio_venta",
             "filial_id",
             "cliente_id",
             "detalles"
           ]
+        },
+        Pago: {
+          type: "object",
+          properties: {
+            _id: {
+              type: "string",
+              description: "ID único del pago"
+            },
+            cotizacion_id: {
+              type: "string",
+              description: "ID de la cotización asociada"
+            },
+            cliente_id: {
+              type: "string",
+              description: "ID del cliente"
+            },
+            monto: {
+              type: "number",
+              minimum: 0.01,
+              description: "Monto del pago"
+            },
+            fecha: {
+              type: "string",
+              format: "date-time",
+              description: "Fecha y hora del pago",
+              default: "Fecha actual"
+            },
+            metodo_pago: {
+              type: "string",
+              enum: ["Efectivo", "Transferencia", "Tarjeta"],
+              description: "Método de pago utilizado"
+            }
+          },
+          required: ["cotizacion_id", "cliente_id", "monto"]
         },
         
         // Cliente

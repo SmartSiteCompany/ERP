@@ -21,11 +21,11 @@ const cotizacionSchema = new mongoose.Schema({
     descripcion: { type: String, required: true },
     cantidad: { type: Number, required: true },
     precio: { type: Number, required: true },
-    total: { type: Number, required: true }
+    total: { type: Number } 
   }],
   subtotal: { type: Number },
   iva: { type: Number },
-  total: { type: Number, required: true },
+  total: { type: Number},
   
   // Tipo de servicio (contado/financiado)
   tipo: { type: String, enum: ['Contado', 'Financiado'], required: true },

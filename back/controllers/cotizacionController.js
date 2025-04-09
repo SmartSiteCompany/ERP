@@ -41,28 +41,64 @@ const crearCotizacion = async (req, res) => {
   try {
     // Validación básica de datos requeridos
     if (!req.body.detalles || req.body.detalles.length === 0) {
-      return res.status(400).json({ error: 'Debe incluir al menos un item en detalles' });
+      return res.status(400).json({ 
+        error: 'Datos incompletos',
+        message: 'Debe incluir al menos un item en detalles' 
+      });
     }
 
-    // Asignar vendedor si no viene en el request (puede venir de autenticación)
+    // Preparar datos de la cotización
     const cotizacionData = {
       ...req.body,
-      vendedor: req.body.vendedor || req.user?.nombre || 'Sistema'
+      vendedor: req.body.vendedor || req.user?.nombre || 'Sistema',
+      // El precio_venta se calculará en el middleware
     };
 
     const cotizacion = new Cotizacion(cotizacionData);
-    await cotizacion.save();
     
-    // Populate para devolver datos completos
-    const cotizacionCreada = await Cotizacion.findById(cotizacion._id)
-      .populate('cliente_id', 'nombre email')
-      .populate('filial_id', 'nombre');
+    // Guardamos primero para obtener el _id y cálculos automáticos
+    await cotizacion.save(); 
 
-    res.status(201).json(cotizacionCreada);
+    // Manejo de pago de contado si aplica
+    if (cotizacion.forma_pago === 'Contado') {
+      const pagoContado = new Pago({
+        cliente_id: cotizacion.cliente_id,
+        cotizacion_id: cotizacion._id,
+        monto_pago: cotizacion.precio_venta,
+        tipo_pago: 'Contado',
+        metodo_pago: req.body.metodo_pago || 'Efectivo',
+        saldo_pendiente: 0,
+        referencia: req.body.referencia_pago || `CONTADO-${cotizacion._id.toString().slice(-6)}`
+      });
+      
+      await pagoContado.save();
+      
+      // Actualizar la cotización con la referencia al pago
+      cotizacion.pago_contado_id = pagoContado._id;
+      await cotizacion.save();
+    }
+
+    // Obtener la cotización completa con relaciones
+    const cotizacionCreada = await Cotizacion.findById(cotizacion._id)
+      .populate('cliente_id', 'nombre email telefono')
+      .populate('filial_id', 'nombre direccion')
+      .populate('pago_contado_id', 'monto_pago metodo_pago fecha_pago');
+
+    res.status(201).json({
+      message: 'Cotización creada exitosamente',
+      cotizacion: cotizacionCreada,
+      // Incluir información útil para el frontend
+      pago_contado: cotizacion.forma_pago === 'Contado' ? {
+        realizado: true,
+        monto: cotizacion.precio_venta
+      } : { realizado: false }
+    });
+
   } catch (error) {
     res.status(400).json({ 
       error: error.message,
-      details: error.errors // Opcional: devolver detalles de validación
+      details: error.errors,
+      message: 'Error al crear la cotización'
     });
   }
 };

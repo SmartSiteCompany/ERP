@@ -92,15 +92,21 @@ const cotizacionSchema = new mongoose.Schema({
     description: "Precio total con utilidad e impuestos" 
   },
   
-  // Tipo de pago (actualizado para coincidir con Swagger)
+  // Tipo de pago 
   forma_pago: { 
     type: String, 
     enum: ['Contado', 'Financiado'], 
     required: true,
     description: "Tipo de pago/contrato" 
   },
+
+  pago_contado_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Pago',
+    description: "Referencia al pago completo cuando es de contado"
+  },
   
-  // Campos específicos para financiado (actualizados)
+  // Campos específicos para financiado
   financiamiento: {
     anticipo_solicitado: { 
       type: Number,
@@ -119,29 +125,13 @@ const cotizacionSchema = new mongoose.Schema({
     saldo_restante: { 
       type: Number,
       description: "Saldo pendiente calculado" 
-    },
-    fecha_inicio: {
-      type: Date,
-      description: "Fecha de inicio del servicio"
-    },
-    fecha_termino: {
-      type: Date,
-      description: "Fecha estimada de término"
     }
   },
   
-  // Campos para contado
-  pagoContado: {
-    fechaPago: { 
-      type: Date,
-      description: "Fecha de pago completo" 
-    }
-  },
-  
-  // Seguimiento de servicio (actualizado)
+  // Seguimiento de servicio 
   estado_servicio: {
     type: String,
-    enum: ['Pendiente', 'EnProceso', 'Completado', 'Cancelado'],
+    enum: ['Pendiente', 'En Proceso', 'Completado', 'Cancelado'],
     default: 'Pendiente',
     description: "Estado del servicio asociado"
   },
@@ -154,36 +144,74 @@ const cotizacionSchema = new mongoose.Schema({
     description: "Fecha real de finalización" 
   }
 }, {
-  timestamps: true, // Añade createdAt y updatedAt automáticamente
+  timestamps: true, 
   toJSON: { virtuals: true }, 
   toObject: { virtuals: true }
 });
 
-// Middleware para cálculos automáticos (actualizado)
-cotizacionSchema.pre('save', function(next) {
+// Middleware para cálculos automáticos
+cotizacionSchema.pre('save', async function(next) {
   // Calcular totales de items
   this.detalles.forEach(item => {
     item.inversion = item.costo_materiales + item.costo_mano_obra;
+    // Calcular precio con utilidad si existe
+    item.precio_con_utilidad = item.inversion * (1 + (item.utilidad_esperada || 0)/100);
   });
   
-  this.subtotal = this.detalles.reduce((sum, item) => sum + item.inversion, 0);
+  // Calcular subtotal (suma de precios con utilidad)
+  this.subtotal = this.detalles.reduce((sum, item) => sum + (item.precio_con_utilidad || item.inversion), 0);
   this.iva = this.subtotal * 0.19;
   this.precio_venta = this.subtotal + this.iva;
   
+  // Validación de forma de pago
+  if (!['Contado', 'Financiado'].includes(this.forma_pago)) {
+    throw new Error('Forma de pago inválida');
+  }
+
   // Cálculos para financiamiento
-  if (this.forma_pago === 'Financiado' && this.financiamiento) {
-    this.financiamiento.saldo_restante = this.precio_venta - (this.financiamiento.anticipo_solicitado || 0);
-    this.financiamiento.pago_semanal = this.financiamiento.saldo_restante / (this.financiamiento.plazo_semanas || 1);
+  if (this.forma_pago === 'Financiado') {
+    // Validar campos requeridos para financiado
+    if (!this.financiamiento?.plazo_semanas || this.financiamiento.plazo_semanas < 1) {
+      throw new Error('Plazo de financiamiento inválido');
+    }
     
-    // Si hay fecha de inicio, calcular fecha de término
-    if (this.financiamiento.fecha_inicio && this.financiamiento.plazo_semanas) {
+    // Calcular valores financiamiento
+    const anticipo = this.financiamiento.anticipo_solicitado || 0;
+    this.financiamiento.saldo_restante = this.precio_venta - anticipo;
+    this.financiamiento.pago_semanal = this.financiamiento.saldo_restante / this.financiamiento.plazo_semanas;
+    
+    // Calcular fechas si existe fecha de inicio
+    if (this.financiamiento.fecha_inicio) {
       const fechaTermino = new Date(this.financiamiento.fecha_inicio);
       fechaTermino.setDate(fechaTermino.getDate() + (this.financiamiento.plazo_semanas * 7));
       this.financiamiento.fecha_termino = fechaTermino;
     }
+    
+    // Limpiar referencia a pago de contado si existe
+    this.pago_contado_id = undefined;
+  } else {
+    // Si es de contado, limpiar datos de financiamiento
+    this.financiamiento = undefined;
+    
+    // Validar que el precio no sea cero
+    if (this.precio_venta <= 0) {
+      throw new Error('El precio de venta debe ser mayor a cero para pagos de contado');
+    }
   }
   
   next();
+});
+
+// Middleware post-save para manejar errores en referencias
+cotizacionSchema.post('save', function(error, doc, next) {
+  if (error.name === 'MongoServerError' && error.code === 11000) {
+    next(new Error('Error de duplicado en la cotización'));
+  } else if (error.name === 'ValidationError') {
+    const messages = Object.values(error.errors).map(val => val.message);
+    next(new Error(messages.join(', ')));
+  } else {
+    next(error);
+  }
 });
 
 // Virtuals para relaciones
@@ -197,6 +225,14 @@ cotizacionSchema.virtual('cliente', {
 cotizacionSchema.virtual('filial', {
   ref: 'Filial',
   localField: 'filial_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+// Virtual para acceder fácilmente al pago de contado
+cotizacionSchema.virtual('pago_contado', {
+  ref: 'Pago',
+  localField: 'pago_contado_id',
   foreignField: '_id',
   justOne: true
 });

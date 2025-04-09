@@ -5,11 +5,11 @@ const bcrypt = require('bcryptjs');
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   apellidos: { type: String, required: true },
-  num_telefono: { type: String, required: false },
+  num_telefono: { type: String, required: false, unique: true },
   descripcion: { type: String, required: false },
   email: { type: String, required: true, unique: true },
   email_verified_at: { type: Date, default: null },
-  password: { type: String, required: true },
+  password: { type: String, required: true, unique: true },
   area: { type: String, required: true },
   bloqueo: { type: String, default: 'activo' },
   foto_user: { type: String, default: 'uploads/users/' },

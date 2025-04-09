@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 
 const cotizacionSchema = new mongoose.Schema({
   // Datos básicos
-  numero: { type: String, required: true, unique: true },
   fecha: { type: Date, default: Date.now },
   validoHasta: { type: Date, required: true },
   estado: { 

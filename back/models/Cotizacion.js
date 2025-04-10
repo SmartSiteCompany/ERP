@@ -115,7 +115,7 @@ const cotizacionSchema = new mongoose.Schema({
     },
     plazo_semanas: { 
       type: Number,
-      min: 1,
+      min: 0,
       description: "Plazo en semanas" 
     },
     pago_semanal: { 
@@ -171,7 +171,7 @@ cotizacionSchema.pre('save', async function(next) {
   // Cálculos para financiamiento
   if (this.forma_pago === 'Financiado') {
     // Validar campos requeridos para financiado
-    if (!this.financiamiento?.plazo_semanas || this.financiamiento.plazo_semanas < 1) {
+    if (!this.financiamiento?.plazo_semanas || this.financiamiento.plazo_semanas < 0) {
       throw new Error('Plazo de financiamiento inválido');
     }
     

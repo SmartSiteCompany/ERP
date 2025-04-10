@@ -82,51 +82,79 @@ const swaggerOptions = {
         Pago: {
           type: "object",
           properties: {
-            _id: { 
-              type: "string", 
-              description: "ID único del pago" 
-            },
-            cotizacion_id: { 
-              type: "string", 
-              description: "ID de la cotización asociada" 
-            },
-            cliente_id: { 
-              type: "string", 
-              description: "ID del cliente" 
-            },
-            fecha_pago: { 
-              type: "string", 
-              format: "date-time", 
-              description: "Fecha del pago" 
-            },
-            monto: { 
-              type: "number", 
-              minimum: 0,
-              description: "Monto del pago" 
-            },
-            metodo: {
+            _id: {
               type: "string",
-              enum: ["Efectivo", "Transferencia", "Tarjeta"],
-              description: "Método de pago"
+              description: "ID único generado automáticamente",
+              example: "507f1f77bcf86cd799439011"
+            },
+            cotizacion_id: {
+              type: "string",
+              description: "ID de la cotización relacionada (ObjectId)",
+              example: "507f191e810c19729de860ea"
+            },
+            cliente_id: {
+              type: "string",
+              description: "ID del cliente (ObjectId)",
+              example: "507f191e810c19729de860eb"
+            },
+            fecha_pago: {
+              type: "string",
+              format: "date-time",
+              description: "Fecha y hora del pago (generada automáticamente)",
+              example: "2023-10-20T14:30:00Z"
+            },
+            monto_pago: {
+              type: "number",
+              minimum: 0.01,
+              description: "Monto del pago en moneda local",
+              example: 1500.50
+            },
+            saldo_pendiente: {
+              type: "number",
+              description: "Saldo restante después de este pago (calculado automáticamente)",
+              example: 3500.00
+            },
+            tipo_pago: {
+              type: "string",
+              enum: ["Contado", "Financiado", "Anticipo", "Abono"],
+              description: "Clasificación del tipo de pago",
+              example: "Abono"
+            },
+            metodo_pago: {
+              type: "string",
+              enum: ["Efectivo", "Transferencia", "Tarjeta", "Cheque"],
+              description: "Medio utilizado para el pago",
+              example: "Transferencia"
             },
             referencia: {
               type: "string",
-              description: "Referencia/folio del pago"
+              description: "Identificador único proporcionado por el medio de pago",
+              example: "TRANS-789456"
             },
-            saldo_anterior: {
-              type: "number",
-              description: "Saldo antes del pago"
+            observaciones: {
+              type: "string",
+              description: "Notas adicionales sobre el pago",
+              example: "Pago correspondiente a la semana 3"
             },
-            saldo_actual: {
-              type: "number",
-              description: "Saldo después del pago"
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              description: "Fecha de creación del registro",
+              readOnly: true
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              description: "Fecha de última actualización",
+              readOnly: true
             }
           },
           required: [
             "cotizacion_id",
             "cliente_id",
-            "monto",
-            "metodo"
+            "monto_pago",
+            "tipo_pago",
+            "metodo_pago"
           ]
         },
         
@@ -194,122 +222,181 @@ const swaggerOptions = {
             },
             nombre_cotizacion: {
               type: "string",
-              description: "Nombre de la cotización"
+              description: "Nombre descriptivo de la cotización",
+              example: "Instalación eléctrica residencial"
             },
             fecha_cotizacion: {
               type: "string",
-              format: "date",
-              description: "Fecha de creación",
+              format: "date-time",
+              description: "Fecha de creación automática",
               default: "Fecha actual"
             },
-            forma_pago: {
+            validoHasta: {
               type: "string",
-              enum: ["Contado", "Financiado"],
-              description: "Tipo de pago"
+              format: "date-time",
+              description: "Fecha de validez de la cotización",
+              example: "2023-12-31T23:59:59Z"
             },
-            precio_venta: {
-              type: "number",
-              description: "Precio total del servicio (calculado automáticamente)",
-              readOnly: true
-            },
-            anticipo_solicitado: {
-              type: "number",
-              minimum: 0,
-              description: "Anticipo requerido (solo financiado)"
-            },
-            filial_id: {
+            estado: {
               type: "string",
-              description: "ID de la filial asociada"
+              enum: ["Borrador", "Enviada", "Aprobada", "Completada", "Cancelada"],
+              default: "Borrador",
+              description: "Estado del flujo de cotización"
             },
             cliente_id: {
               type: "string",
-              description: "ID del cliente asociado"
+              description: "ID del cliente asociado (ObjectId)"
             },
-            estado_servicio: {
+            vendedor: {
               type: "string",
-              enum: ["Pendiente", "Activo", "Completado", "Cancelado"],
-              default: "Pendiente",
-              description: "Estado del servicio generado"
+              description: "Nombre del vendedor responsable",
+              example: "María González"
+            },
+            filial_id: {
+              type: "string",
+              description: "ID de la filial/sucursal asociada (ObjectId)"
             },
             detalles: {
               type: "array",
+              minItems: 1,
               items: {
                 type: "object",
                 properties: {
-                  descripcion: { 
+                  descripcion: {
                     type: "string",
-                    description: "Descripción del item"
+                    description: "Descripción del servicio/producto",
+                    example: "Cámara de seguridad 4K"
                   },
-                  costo_materiales: { 
+                  costo_materiales: {
                     type: "number",
                     minimum: 0,
-                    description: "Costo de materiales"
+                    description: "Costo de materiales",
+                    example: 1200
                   },
-                  costo_mano_obra: { 
+                  costo_mano_obra: {
                     type: "number",
                     minimum: 0,
-                    description: "Costo de mano de obra" 
+                    description: "Costo de mano de obra",
+                    example: 800
                   },
-                  inversion: { 
+                  utilidad_esperada: {
+                    type: "number",
+                    default: 0,
+                    description: "Porcentaje de utilidad esperada",
+                    example: 30
+                  },
+                  inversion: {
                     type: "number",
                     readOnly: true,
-                    description: "Calculado automáticamente (materiales + mano obra)",
-                    example: 1500
-                  },
-                  utilidad_esperada: { 
-                    type: "number",
-                    minimum: 0,
-                    description: "Porcentaje o monto de utilidad esperada" 
+                    description: "Total calculado (materiales + mano obra)",
+                    example: 2000
                   }
                 },
                 required: ["descripcion", "costo_materiales", "costo_mano_obra"]
               }
             },
+            subtotal: {
+              type: "number",
+              readOnly: true,
+              description: "Subtotal antes de impuestos (calculado automáticamente)",
+              example: 15000
+            },
+            iva: {
+              type: "number",
+              readOnly: true,
+              description: "Monto de IVA calculado (19%)",
+              example: 2850
+            },
+            precio_venta: {
+              type: "number",
+              readOnly: true,
+              description: "Precio total con utilidad e impuestos",
+              example: 17850
+            },
+            forma_pago: {
+              type: "string",
+              enum: ["Contado", "Financiado"],
+              description: "Tipo de pago/contrato"
+            },
+            pago_contado_id: {
+              type: "string",
+              description: "ID del pago completo (solo para forma_pago=Contado)"
+            },
             financiamiento: {
               type: "object",
               properties: {
+                anticipo_solicitado: {
+                  type: "number",
+                  minimum: 0,
+                  description: "Anticipo requerido",
+                  example: 5000
+                },
                 plazo_semanas: {
-                  type: "integer",
+                  type: "number",
                   minimum: 1,
-                  description: "Plazo en semanas"
+                  description: "Plazo en semanas",
+                  example: 12
                 },
                 pago_semanal: {
                   type: "number",
                   readOnly: true,
-                  description: "Monto de pago semanal calculado automáticamente",
-                  example: 250.50
+                  description: "Monto de pago semanal calculado",
+                  example: 1070.83
                 },
                 saldo_restante: {
                   type: "number",
                   readOnly: true,
-                  description: "Saldo pendiente de pago (calculado automáticamente)",
-                  example: 2000
+                  description: "Saldo pendiente calculado",
+                  example: 12850
                 },
                 fecha_inicio: {
                   type: "string",
-                  format: "date",
+                  format: "date-time",
                   description: "Fecha de inicio del servicio"
                 },
                 fecha_termino: {
                   type: "string",
-                  format: "date",
+                  format: "date-time",
                   description: "Fecha estimada de término (calculada automáticamente)"
                 }
               }
             },
-            pagos: {
-              type: "array",
-              items: {
-                $ref: "#/components/schemas/Pago"
-              }
+            estado_servicio: {
+              type: "string",
+              enum: ["Pendiente", "En Proceso", "Completado", "Cancelado"],
+              default: "Pendiente",
+              description: "Estado del servicio asociado"
+            },
+            fecha_inicio_servicio: {
+              type: "string",
+              format: "date-time",
+              description: "Fecha real de inicio del servicio"
+            },
+            fecha_fin_servicio: {
+              type: "string",
+              format: "date-time",
+              description: "Fecha real de finalización del servicio"
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              readOnly: true,
+              description: "Fecha de creación del registro"
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              readOnly: true,
+              description: "Fecha de última actualización"
             }
           },
           required: [
             "nombre_cotizacion",
-            "fecha_cotizacion",
+            "validoHasta",
             "forma_pago",
-            "filial_id",
             "cliente_id",
+            "vendedor",
+            "filial_id",
             "detalles"
           ]
         },
@@ -328,24 +415,51 @@ const swaggerOptions = {
               type: "string",
               description: "ID del cliente"
             },
-            monto: {
-              type: "number",
-              minimum: 0.01,
-              description: "Monto del pago"
-            },
-            fecha: {
+            fecha_pago: {
               type: "string",
               format: "date-time",
               description: "Fecha y hora del pago",
               default: "Fecha actual"
             },
+            monto_pago: {
+              type: "number",
+              minimum: 0.01,
+              description: "Monto del pago",
+              example: 1500
+            },
+            saldo_pendiente: {
+              type: "number",
+              description: "Saldo restante después de este pago",
+              example: 11350
+            },
+            tipo_pago: {
+              type: "string",
+              enum: ["Contado", "Financiado", "Anticipo", "Abono"],
+              description: "Tipo de transacción"
+            },
             metodo_pago: {
               type: "string",
-              enum: ["Efectivo", "Transferencia", "Tarjeta"],
+              enum: ["Efectivo", "Transferencia", "Tarjeta", "Cheque"],
               description: "Método de pago utilizado"
+            },
+            referencia: {
+              type: "string",
+              description: "Número de referencia/folio del pago",
+              example: "TRANS-12345"
+            },
+            observaciones: {
+              type: "string",
+              description: "Notas adicionales sobre el pago",
+              example: "Pago parcial mediante transferencia"
             }
           },
-          required: ["cotizacion_id", "cliente_id", "monto"]
+          required: [
+            "cotizacion_id",
+            "cliente_id",
+            "monto_pago",
+            "tipo_pago",
+            "metodo_pago"
+          ]
         },
         
         // Cliente

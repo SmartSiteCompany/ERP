@@ -1,209 +1,75 @@
+// src/routes/cotizacionRoutes.js
 const express = require('express');
 const router = express.Router();
 const cotizacionController = require('../controllers/cotizacionController');
 
 /**
  * @swagger
- * tags:
- *   name: Cotizaciones
- *   description: Endpoints para gestionar cotizaciones y servicios financiados
- * 
- * components:
- *   schemas:
- *     Cotizacion:
- *       type: object
- *       required:
- *         - nombre_cotizacion
- *         - fecha_cotizacion
- *         - forma_pago
- *         - filial_id
- *         - cliente_id
- *         - vendedor
- *         - detalles
- *       properties:
- *         _id:
- *           type: string
- *           description: ID único de la cotización
- *         nombre_cotizacion:
- *           type: string
- *           description: Nombre descriptivo de la cotización
- *         fecha_cotizacion:
- *           type: string
- *           format: date-time
- *           description: Fecha de creación automática
- *         validoHasta:
- *           type: string
- *           format: date-time
- *           description: Fecha de validez de la cotización
- *         estado:
- *           type: string
- *           enum: ['Borrador', 'Enviada', 'Aprobada', 'Completada', 'Cancelada']
- *           default: 'Borrador'
- *           description: Estado del flujo de cotización
- *         cliente_id:
- *           type: string
- *           description: Referencia al cliente
- *         vendedor:
- *           type: string
- *           description: Nombre del vendedor responsable
- *         filial_id:
- *           type: string
- *           description: Referencia a la filial/sucursal
- *         detalles:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               descripcion:
- *                 type: string
- *                 description: Descripción del servicio/producto
- *               costo_materiales:
- *                 type: number
- *                 minimum: 0
- *                 description: Costo de materiales
- *               costo_mano_obra:
- *                 type: number
- *                 minimum: 0
- *                 description: Costo de mano de obra
- *               utilidad_esperada:
- *                 type: number
- *                 default: 0
- *                 description: Porcentaje de utilidad esperada
- *               inversion:
- *                 type: number
- *                 readOnly: true
- *                 description: Total calculado (materiales + mano obra)
- *         subtotal:
- *           type: number
- *           readOnly: true
- *           description: Subtotal antes de impuestos
- *         iva:
- *           type: number
- *           readOnly: true
- *           description: Monto de IVA calculado
- *         precio_venta:
- *           type: number
- *           readOnly: true
- *           description: Precio total con utilidad e impuestos
- *         forma_pago:
- *           type: string
- *           enum: ['Contado', 'Financiado']
- *           description: Tipo de pago/contrato
- *         financiamiento:
- *           type: object
- *           properties:
- *             anticipo_solicitado:
- *               type: number
- *               minimum: 0
- *               description: Anticipo requerido
- *             plazo_semanas:
- *               type: number
- *               minimum: 1
- *               description: Plazo en semanas
- *             pago_semanal:
- *               type: number
- *               readOnly: true
- *               description: Monto de pago semanal calculado
- *             saldo_restante:
- *               type: number
- *               readOnly: true
- *               description: Saldo pendiente calculado
- *             fecha_inicio:
- *               type: string
- *               format: date-time
- *               description: Fecha de inicio del servicio
- *             fecha_termino:
- *               type: string
- *               format: date-time
- *               description: Fecha estimada de término
- *         pagoContado:
- *           type: object
- *           properties:
- *             fechaPago:
- *               type: string
- *               format: date-time
- *               description: Fecha de pago completo
- *         estado_servicio:
- *           type: string
- *           enum: ['Pendiente', 'EnProceso', 'Completado', 'Cancelado']
- *           default: 'Pendiente'
- *           description: Estado del servicio asociado
- *         fecha_inicio_servicio:
- *           type: string
- *           format: date-time
- *           description: Fecha real de inicio
- *         fecha_fin_servicio:
- *           type: string
- *           format: date-time
- *           description: Fecha real de finalización
- * 
- *     Pago:
- *       type: object
- *       properties:
- *         _id:
- *           type: string
- *           description: ID del pago
- *         cotizacion_id:
- *           type: string
- *           description: ID de la cotización asociada
- *         cliente_id:
- *           type: string
- *           description: ID del cliente
- *         monto:
- *           type: number
- *           minimum: 0.01
- *           description: Monto del pago
- *         fecha:
- *           type: string
- *           format: date-time
- *           description: Fecha y hora del pago
- *         metodo_pago:
- *           type: string
- *           enum: ["Efectivo", "Transferencia", "Tarjeta"]
- *           description: Método de pago utilizado
- *       required:
- *         - cotizacion_id
- *         - cliente_id
- *         - monto
- */
-
-// ==============================================
-// Operaciones CRUD básicas para cotizaciones
-// ==============================================
-
-/**
- * @swagger
  * /cotizaciones:
  *   get:
- *     summary: Obtener todas las cotizaciones
+ *     summary: Obtener todas las cotizaciones con filtros avanzados
  *     tags: [Cotizaciones]
  *     parameters:
+ *       - in: query
+ *         name: estado
+ *         schema:
+ *           type: string
+ *           enum: ['Borrador', 'Enviada', 'Aprobada', 'Completada', 'Cancelada']
+ *         description: Filtro por estado de cotización
  *       - in: query
  *         name: estado_servicio
  *         schema:
  *           type: string
- *           enum: ["Pendiente", "EnProceso", "Completado", "Cancelado"]
- *         description: Filtrar por estado de servicio
+ *           enum: ['Pendiente', 'En Proceso', 'Completado', 'Cancelado']
+ *         description: Filtro por estado de servicio
  *       - in: query
  *         name: forma_pago
  *         schema:
  *           type: string
- *           enum: ["Contado", "Financiado"]
- *         description: Filtrar por tipo de pago
+ *           enum: ['Contado', 'Financiado']
+ *         description: Filtro por tipo de pago
  *       - in: query
  *         name: filial_id
  *         schema:
  *           type: string
- *         description: Filtrar por filial
+ *         description: ID de filial para filtrar
+ *       - in: query
+ *         name: cliente_id
+ *         schema:
+ *           type: string
+ *         description: ID de cliente para filtrar
+ *       - in: query
+ *         name: vendedor
+ *         schema:
+ *           type: string
+ *         description: Nombre del vendedor para filtrar
+ *       - in: query
+ *         name: fecha_inicio
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha inicial para rango de cotizaciones (YYYY-MM-DD)
+ *       - in: query
+ *         name: fecha_fin
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha final para rango de cotizaciones (YYYY-MM-DD)
  *     responses:
  *       200:
- *         description: Lista de cotizaciones
+ *         description: Lista de cotizaciones filtradas
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Cotizacion'
+ *             example:
+ *               - _id: "507f1f77bcf86cd799439011"
+ *                 nombre_cotizacion: "Reparación de techos"
+ *                 estado: "Aprobada"
+ *                 estado_servicio: "En Proceso"
+ *                 precio_venta: 25000
  */
 router.get('/', cotizacionController.obtenerCotizaciones);
 
@@ -211,7 +77,7 @@ router.get('/', cotizacionController.obtenerCotizaciones);
  * @swagger
  * /cotizaciones/{id}:
  *   get:
- *     summary: Obtener una cotización por ID
+ *     summary: Obtener cotización por ID con relaciones completas
  *     tags: [Cotizaciones]
  *     parameters:
  *       - in: path
@@ -219,15 +85,31 @@ router.get('/', cotizacionController.obtenerCotizaciones);
  *         required: true
  *         schema:
  *           type: string
+ *         example: "507f1f77bcf86cd799439011"
  *     responses:
  *       200:
- *         description: Cotización encontrada
+ *         description: Cotización con todos los campos y relaciones virtuales
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Cotizacion'
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Cotizacion'
+ *                 - type: object
+ *                   properties:
+ *                     cliente:
+ *                       $ref: '#/components/schemas/Cliente'
+ *                     filial:
+ *                       $ref: '#/components/schemas/Filial'
+ *                     pagos:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Pago'
  *       404:
  *         description: Cotización no encontrada
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "No se encontró cotización con el ID proporcionado"
  */
 router.get('/:id', cotizacionController.obtenerCotizacionPorId);
 
@@ -235,38 +117,69 @@ router.get('/:id', cotizacionController.obtenerCotizacionPorId);
  * @swagger
  * /cotizaciones:
  *   post:
- *     summary: Crear una nueva cotización
+ *     summary: Crear nueva cotización con validación automática
  *     tags: [Cotizaciones]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Cotizacion'
- *           example:
- *             nombre_cotizacion: "Instalación sistema seguridad"
- *             forma_pago: "Financiado"
- *             filial_id: "64f1a2b3c4d5e6f7g8h9i0k"
- *             cliente_id: "64f1a2b3c4d5e6f7g8h9i0j"
- *             vendedor: "Ana López"
- *             validoHasta: "2023-12-31T23:59:59Z"
- *             detalles:
- *               - descripcion: "Cámara de vigilancia 4K"
- *                 costo_materiales: 1200
- *                 costo_mano_obra: 500
- *                 utilidad_esperada: 30
- *             financiamiento:
- *               anticipo_solicitado: 2000
- *               plazo_semanas: 12
+ *             type: object
+ *             properties:
+ *               nombre_cotizacion:
+ *                 type: string
+ *                 example: "Instalación de ventanas"
+ *               validoHasta:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2023-12-31T23:59:59Z"
+ *               forma_pago:
+ *                 type: string
+ *                 enum: ['Contado', 'Financiado']
+ *               cliente_id:
+ *                 type: string
+ *                 example: "507f191e810c19729de860ea"
+ *               filial_id:
+ *                 type: string
+ *                 example: "507f191e810c19729de860eb"
+ *               vendedor:
+ *                 type: string
+ *                 example: "Juan Pérez"
+ *               detalles:
+ *                 type: array
+ *                 minItems: 1
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     descripcion:
+ *                       type: string
+ *                     costo_materiales:
+ *                       type: number
+ *                     costo_mano_obra:
+ *                       type: number
+ *                     utilidad_esperada:
+ *                       type: number
+ *             required:
+ *               - nombre_cotizacion
+ *               - validoHasta
+ *               - forma_pago
+ *               - cliente_id
+ *               - filial_id
+ *               - vendedor
+ *               - detalles
  *     responses:
  *       201:
- *         description: Cotización creada exitosamente
+ *         description: Cotización creada con cálculos automáticos
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Cotizacion'
  *       400:
- *         description: Datos de entrada inválidos
+ *         description: Error de validación
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "detalles: Debe contener al menos 1 item"
  */
 router.post('/', cotizacionController.crearCotizacion);
 
@@ -274,7 +187,7 @@ router.post('/', cotizacionController.crearCotizacion);
  * @swagger
  * /cotizaciones/{id}:
  *   put:
- *     summary: Actualizar una cotización existente
+ *     summary: Actualizar cotización existente con recálculo automático
  *     tags: [Cotizaciones]
  *     parameters:
  *       - in: path
@@ -290,15 +203,17 @@ router.post('/', cotizacionController.crearCotizacion);
  *             $ref: '#/components/schemas/Cotizacion'
  *     responses:
  *       200:
- *         description: Cotización actualizada exitosamente
+ *         description: Cotización actualizada con recálculos
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Cotizacion'
+ *       400:
+ *         description: Error en datos de entrada
  *       404:
  *         description: Cotización no encontrada
- *       400:
- *         description: Datos de entrada inválidos
+ *       409:
+ *         description: No se puede modificar una cotización completada/cancelada
  */
 router.put('/:id', cotizacionController.actualizarCotizacion);
 
@@ -306,7 +221,7 @@ router.put('/:id', cotizacionController.actualizarCotizacion);
  * @swagger
  * /cotizaciones/{id}:
  *   delete:
- *     summary: Eliminar una cotización
+ *     summary: Eliminar cotización (solo si está en estado Borrador)
  *     tags: [Cotizaciones]
  *     parameters:
  *       - in: path
@@ -316,7 +231,17 @@ router.put('/:id', cotizacionController.actualizarCotizacion);
  *           type: string
  *     responses:
  *       200:
- *         description: Cotización eliminada exitosamente
+ *         description: Cotización eliminada
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Cotización eliminada correctamente"
+ *       403:
+ *         description: No se puede eliminar (estado no es Borrador)
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Solo se pueden eliminar cotizaciones en estado Borrador"
  *       404:
  *         description: Cotización no encontrada
  */
@@ -330,9 +255,8 @@ router.delete('/:id', cotizacionController.eliminarCotizacion);
  * @swagger
  * /cotizaciones/{id}/activar:
  *   post:
- *     summary: Activar servicio asociado a cotización
+ *     summary: Activar servicio cambiando estado a "En Proceso"
  *     tags: [Cotizaciones]
- *     description: Convierte una cotización en un servicio activo (EnProceso)
  *     parameters:
  *       - in: path
  *         name: id
@@ -341,13 +265,22 @@ router.delete('/:id', cotizacionController.eliminarCotizacion);
  *           type: string
  *     responses:
  *       200:
- *         description: Servicio activado exitosamente
+ *         description: Servicio activado con fecha de inicio
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Cotizacion'
  *       400:
- *         description: No se puede activar el servicio
+ *         description: No se puede activar
+ *         content:
+ *           application/json:
+ *             examples:
+ *               financiamiento:
+ *                 value:
+ *                   error: "Requiere anticipo mínimo del 30% para activar"
+ *               estado:
+ *                 value:
+ *                   error: "La cotización debe estar Aprobada para activar"
  *       404:
  *         description: Cotización no encontrada
  */
@@ -367,13 +300,17 @@ router.post('/:id/activar', cotizacionController.activarServicio);
  *           type: string
  *     responses:
  *       200:
- *         description: Servicio marcado como completado
+ *         description: Servicio completado con fecha de término
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Cotizacion'
  *       400:
- *         description: No se puede completar el servicio
+ *         description: No se puede completar
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "El servicio no está en estado 'En Proceso'"
  *       404:
  *         description: Cotización no encontrada
  */
@@ -383,7 +320,7 @@ router.post('/:id/completar', cotizacionController.completarServicio);
  * @swagger
  * /cotizaciones/servicios/{estado}:
  *   get:
- *     summary: Obtener servicios por estado
+ *     summary: Obtener servicios por estado con paginación
  *     tags: [Cotizaciones]
  *     parameters:
  *       - in: path
@@ -391,22 +328,33 @@ router.post('/:id/completar', cotizacionController.completarServicio);
  *         required: true
  *         schema:
  *           type: string
- *           enum: ["Pendiente", "EnProceso", "Completado", "Cancelado"]
+ *           enum: ['Pendiente', 'En Proceso', 'Completado', 'Cancelado']
  *       - in: query
- *         name: forma_pago
+ *         name: page
  *         schema:
- *           type: string
- *           enum: ["Contado", "Financiado"]
- *         description: Filtrar por tipo de pago
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
  *     responses:
  *       200:
- *         description: Lista de servicios filtrados
+ *         description: Lista paginada de servicios
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Cotizacion'
+ *               type: object
+ *               properties:
+ *                 total:
+ *                   type: integer
+ *                 pages:
+ *                   type: integer
+ *                 results:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Cotizacion'
  */
 router.get('/servicios/:estado', cotizacionController.obtenerServiciosPorEstado);
 
@@ -418,7 +366,7 @@ router.get('/servicios/:estado', cotizacionController.obtenerServiciosPorEstado)
  * @swagger
  * /cotizaciones/{id}/pagos:
  *   post:
- *     summary: Registrar pago para servicio financiado
+ *     summary: Registrar pago asociado a cotización
  *     tags: [Cotizaciones]
  *     parameters:
  *       - in: path
@@ -433,20 +381,24 @@ router.get('/servicios/:estado', cotizacionController.obtenerServiciosPorEstado)
  *           schema:
  *             type: object
  *             properties:
- *               monto:
+ *               monto_pago:
  *                 type: number
  *                 minimum: 0.01
+ *               tipo_pago:
+ *                 type: string
+ *                 enum: ['Contado', 'Financiado', 'Anticipo', 'Abono']
  *               metodo_pago:
  *                 type: string
- *                 enum: ["Efectivo", "Transferencia", "Tarjeta"]
+ *                 enum: ['Efectivo', 'Transferencia', 'Tarjeta', 'Cheque']
+ *               referencia:
+ *                 type: string
  *             required:
- *               - monto
- *           example:
- *             monto: 1500
- *             metodo_pago: "Transferencia"
+ *               - monto_pago
+ *               - tipo_pago
+ *               - metodo_pago
  *     responses:
  *       200:
- *         description: Pago registrado exitosamente
+ *         description: Pago registrado y saldos actualizados
  *         content:
  *           application/json:
  *             schema:
@@ -457,9 +409,16 @@ router.get('/servicios/:estado', cotizacionController.obtenerServiciosPorEstado)
  *                 pago:
  *                   $ref: '#/components/schemas/Pago'
  *       400:
- *         description: Monto inválido o servicio no financiado
- *       404:
- *         description: Cotización no encontrada
+ *         description: Error en pago
+ *         content:
+ *           application/json:
+ *             examples:
+ *               monto:
+ *                 value:
+ *                   error: "El monto excede el saldo pendiente"
+ *               estado:
+ *                 value:
+ *                   error: "No se pueden registrar pagos en cotizaciones canceladas"
  */
 router.post('/:id/pagos', cotizacionController.registrarPago);
 
@@ -467,7 +426,7 @@ router.post('/:id/pagos', cotizacionController.registrarPago);
  * @swagger
  * /cotizaciones/{id}/pagos:
  *   get:
- *     summary: Obtener historial de pagos de un servicio financiado
+ *     summary: Obtener historial completo de pagos
  *     tags: [Cotizaciones]
  *     parameters:
  *       - in: path
@@ -475,9 +434,16 @@ router.post('/:id/pagos', cotizacionController.registrarPago);
  *         required: true
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: orden
+ *         schema:
+ *           type: string
+ *           enum: ['asc', 'desc']
+ *           default: 'desc'
+ *         description: Orden por fecha de pago
  *     responses:
  *       200:
- *         description: Lista de pagos registrados
+ *         description: Lista de pagos ordenada
  *         content:
  *           application/json:
  *             schema:
@@ -485,7 +451,7 @@ router.post('/:id/pagos', cotizacionController.registrarPago);
  *               items:
  *                 $ref: '#/components/schemas/Pago'
  *       404:
- *         description: Cotización no encontrada o no tiene pagos
+ *         description: No se encontraron pagos
  */
 router.get('/:id/pagos', cotizacionController.obtenerHistorialPagos);
 

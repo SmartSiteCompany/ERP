@@ -63,6 +63,28 @@ const obtenerPagoPorId = async (req, res) => {
   }
 };
 
+// Obtener el pago de contado asociado a una cotización
+const obtenerPagoContado = async (req, res) => {
+  try {
+    const cotizacion = await Cotizacion.findById(req.params.id)
+      .populate('pago_contado_id');
+    
+    if (!cotizacion || cotizacion.forma_pago !== 'Contado' || !cotizacion.pago_contado_id) {
+      return res.status(404).json({
+        error: 'Pago no encontrado',
+        message: 'La cotización no es de contado o no tiene pago registrado'
+      });
+    }
+    
+    res.json(cotizacion.pago_contado_id);
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message,
+      message: 'Error al obtener el pago de contado'
+    });
+  }
+};
+
 // Crear un nuevo pago con validaciones y actualización de cotización
 const crearPago = async (req, res) => {
   try {
@@ -284,6 +306,7 @@ const eliminarPago = async (req, res) => {
 module.exports = {
   obtenerPagos,
   obtenerPagoPorId,
+  obtenerPagoContado,
   crearPago,
   actualizarPago,
   eliminarPago

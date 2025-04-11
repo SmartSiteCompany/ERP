@@ -160,7 +160,7 @@ cotizacionSchema.pre('save', async function(next) {
   
   // Calcular subtotal (suma de precios con utilidad)
   this.subtotal = this.detalles.reduce((sum, item) => sum + (item.precio_con_utilidad || item.inversion), 0);
-  this.iva = this.subtotal * 0.19;
+  this.iva = this.subtotal * 0.16;
   this.precio_venta = this.subtotal + this.iva;
   
   // Validación de forma de pago

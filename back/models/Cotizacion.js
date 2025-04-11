@@ -159,7 +159,7 @@ cotizacionSchema.pre('save', async function(next) {
   });
   
   // Calcular subtotal (suma de precios con utilidad)
-  this.subtotal = this.detalles.reduce((sum, item) => sum + (item.precio_con_utilidad || item.inversion), 0);
+  this.subtotal = this.detalles.reduce((sum, item) => sum + item.precio_con_utilidad, 0);
   this.iva = this.subtotal * 0.16;
   this.precio_venta = this.subtotal + this.iva;
   
@@ -179,7 +179,20 @@ cotizacionSchema.pre('save', async function(next) {
     const anticipo = this.financiamiento.anticipo_solicitado || 0;
     this.financiamiento.saldo_restante = this.precio_venta - anticipo;
     this.financiamiento.pago_semanal = this.financiamiento.saldo_restante / this.financiamiento.plazo_semanas;
+    //this.financiamiento.pago_semanal = this.financiamiento.saldo_restante / this.financiamiento.plazo_semanas;
     
+    if (anticipo > 0) {
+      const pagoAnticipo = new Pago({
+        cliente_id: this.cliente_id,
+        cotizacion_id: this._id,
+        monto_pago: anticipo,
+        tipo_pago: 'Anticipo',
+        metodo_pago: 'Transferencia',
+        saldo_pendiente: this.financiamiento.saldo_restante, 
+      });
+      await pagoAnticipo.save();
+    }
+
     // Calcular fechas si existe fecha de inicio
     if (this.financiamiento.fecha_inicio) {
       const fechaTermino = new Date(this.financiamiento.fecha_inicio);

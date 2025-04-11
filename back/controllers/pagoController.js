@@ -86,6 +86,19 @@ const obtenerPagoContado = async (req, res) => {
   }
 };
 
+const obtenerPagosFinanciados = async (req, res) => {
+  try {
+    const pagos = await Pago.find({
+      cotizacion_id: req.params.cotizacion_id,
+      tipo_pago: { $in: ['Abono', 'Anticipo'] },
+    }).sort({ fecha_estimada: 1 });
+
+    res.json(pagos);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Crear un nuevo pago con validaciones y actualización de cotización
 const crearPago = async (req, res) => {
   try {
@@ -127,6 +140,22 @@ const crearPago = async (req, res) => {
     // Calcular saldo pendiente
     let saldo_pendiente = 0;
     if (cotizacion.forma_pago === 'Financiado') {
+      const { plazo_semanas, pago_semanal } = cotizacion.financiamiento;
+
+      for(let i = 0; i < plazo_semanas; i++) {
+        const fechaPago = new Date();
+        fechaPago.setDate(fechaPago.getDate() + (7 * i));
+
+        await Pago.create({
+          cliente_id: cotizacion.cliente_id,
+          cotizacion_id: cotizacion._id,
+          monto_pago: pago_semanal,
+          tipo_pago: 'Abono',
+          metodo_pago: 'Pendiente',
+          fecha_estimada: fechaPago,
+          estado: 'Pendiente'
+        });
+      }
       saldo_pendiente = (cotizacion.financiamiento?.saldoRestante || cotizacion.precio_venta) - monto_pago;
     } else {
       // Para pagos de contado
@@ -336,11 +365,38 @@ const eliminarPago = async (req, res) => {
   }
 };
 
+const debitarPagoFinanciado = async (req, res) => {
+  try {
+    const pago = await Pago.findById(req.params.pago_id);
+    
+    if (!pago || pago.estado !== 'Pendiente') {
+      return res.status(400).json({ error: 'Pago no disponible para debitar' });
+    }
+
+    // Actualizar pago
+    pago.metodo_pago = req.body.metodo_pago || 'Transferencia';
+    pago.fecha_pago = new Date();
+    pago.estado = 'Completado';
+    await pago.save();
+
+    // Actualizar saldo en cotización
+    const cotizacion = await Cotizacion.findById(pago.cotizacion_id);
+    cotizacion.financiamiento.saldo_restante -= pago.monto_pago;
+    await cotizacion.save();
+
+    res.json(pago);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   obtenerPagos,
   obtenerPagoPorId,
   obtenerPagoContado,
+  obtenerPagosFinanciados,
   crearPago,
   actualizarPago,
-  eliminarPago
+  eliminarPago,
+  debitarPagoFinanciado
 };

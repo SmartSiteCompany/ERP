@@ -12,8 +12,8 @@ const obtenerCotizaciones = async (req, res) => {
     if (forma_pago) filtro.forma_pago = forma_pago;
 
     const cotizaciones = await Cotizacion.find(filtro)
-      .populate('cliente_id', 'nombre email')
-      .populate('filial_id', 'nombre')
+      .populate('cliente_id', 'nombre', 'correo')
+      .populate('filial_id', 'nombre_filial')
       .sort({ fecha_cotizacion: -1 });
 
     res.json(cotizaciones);
@@ -25,8 +25,8 @@ const obtenerCotizaciones = async (req, res) => {
 const obtenerCotizacionPorId = async (req, res) => {
   try {
     const cotizacion = await Cotizacion.findById(req.params.id)
-      .populate('cliente_id', 'nombre email telefono')
-      .populate('filial_id', 'nombre direccion');
+      .populate('cliente_id','nombre','correo','telefono')
+      .populate('filial_id', 'nombre_filial');
       
     if (!cotizacion) {
       return res.status(404).json({ error: 'Cotización no encontrada' });
@@ -80,9 +80,9 @@ const crearCotizacion = async (req, res) => {
 
     // Obtener la cotización completa con relaciones
     const cotizacionCreada = await Cotizacion.findById(cotizacion._id)
-      .populate('cliente_id', 'nombre email telefono')
-      .populate('filial_id', 'nombre direccion')
-      .populate('pago_contado_id', 'monto_pago metodo_pago fecha_pago');
+      .populate('cliente_id', 'nombre', 'correo', 'telefono')
+      .populate('filial_id', 'nombre_filial')
+      .populate('pago_contado_id', 'monto_pago', 'metodo_pago', 'fecha_pago');
 
     res.status(201).json({
       message: 'Cotización creada exitosamente',
@@ -123,8 +123,8 @@ const actualizarCotizacion = async (req, res) => {
         runValidators: true 
       }
     )
-    .populate('cliente_id', 'nombre email')
-    .populate('filial_id', 'nombre');
+    .populate('cliente_id', 'nombre', 'correo')
+    .populate('filial_id', 'nombre_filial');
     
     if (!cotizacion) {
       return res.status(404).json({ error: 'Cotización no encontrada' });
@@ -193,8 +193,8 @@ const activarServicio = async (req, res) => {
     
     // Devolver cotización actualizada con relaciones
     const cotizacionActualizada = await Cotizacion.findById(cotizacion._id)
-      .populate('cliente_id', 'nombre email')
-      .populate('filial_id', 'nombre');
+      .populate('cliente_id', 'nombre','correo')
+      .populate('filial_id', 'nombre_filial');
       
     res.json(cotizacionActualizada);
   } catch (error) {
@@ -288,7 +288,7 @@ const registrarPago = async (req, res) => {
     res.json({
       cotizacion: await Cotizacion.findById(cotizacion._id)
         .populate('cliente_id', 'nombre')
-        .populate('filial_id', 'nombre'),
+        .populate('filial_id', 'nombre_filial'),
       pago
     });
   } catch (error) {
@@ -332,8 +332,8 @@ const obtenerServiciosPorEstado = async (req, res) => {
     };
 
     const cotizaciones = await Cotizacion.find(filtro)
-      .populate('cliente_id', 'nombre telefono')
-      .populate('filial_id', 'nombre')
+      .populate('cliente_id', 'nombre', 'telefono')
+      .populate('filial_id', 'nombre_filial')
       .sort({ fecha_inicio_servicio: -1 });
     
     res.json(cotizaciones);

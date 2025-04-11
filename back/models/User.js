@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   email_verified_at: { type: Date, default: null },
   password: { type: String, required: true, unique: true },
-  area: { type: String, required: true },
+  filial_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Filial', required: true },
   bloqueo: { type: String, default: 'activo' },
   foto_user: { type: String, default: 'uploads/users/' },
   rol_user: { type: String, default: 'usuario' },

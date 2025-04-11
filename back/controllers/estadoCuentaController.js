@@ -1,4 +1,6 @@
 const EstadoCuenta = require('../models/EstadoCuenta'); 
+const Pago = require('../models/Pago');
+const Cotizacion = require('../models/Cotizacion');
 
 // Obtener todos los estados de cuenta
 const obtenerEstadosCuenta = async (req, res) => {

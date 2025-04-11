@@ -1,5 +1,6 @@
 const Pago = require('../models/Pago');
 const Cotizacion = require('../models/Cotizacion');
+const EstadoCuenta = require('../models/EstadoCuenta');
 
 // Obtener todos los pagos con filtros avanzados
 const obtenerPagos = async (req, res) => {

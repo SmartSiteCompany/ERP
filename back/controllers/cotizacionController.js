@@ -1,6 +1,7 @@
 // src/controllers/cotizacionController.js
 const Cotizacion = require('../models/Cotizacion');
 const Pago = require('../models/Pago');
+const EstadoCuenta = require('../models/EstadoCuenta');
 
 // Operaciones CRUD básicas para cotizaciones
 const obtenerCotizaciones = async (req, res) => {

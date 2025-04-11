@@ -105,6 +105,16 @@ const crearPago = async (req, res) => {
       });
     }
 
+    await EstadoCuenta.findOneAndUpdate(
+      { cotizacion_id: pago.cotizacion_id },
+      { 
+        $push: { pagos_ids: pago._id },
+        $inc: { pagos_total: pago.monto_pago, saldo_actual: -pago.monto_pago },
+        estado: (pago.saldo_pendiente <= 0) ? 'Pagado' : 'Activo'
+      },
+      { new: true }
+    )
+
     const cotizacion = await Cotizacion.findById(cotizacion_id);
     if (!cotizacion) {
       return res.status(404).json({
@@ -138,6 +148,16 @@ const crearPago = async (req, res) => {
     });
 
     await pago.save();
+
+        // Sincronizar con EstadoCuenta
+        const estadoCuenta = await EstadoCuenta.findOneAndUpdate(
+          { cotizacion_id },
+          { 
+            $push: { pagos_ids: pago._id },
+            $inc: { pagos_total: monto_pago },
+          },
+          { new: true, upsert: true } // Si no existe, lo crea
+        ).populate('pago_id');
 
     // Actualizar la cotización si es financiado
     if (cotizacion.forma_pago === 'Financiado') {
@@ -259,6 +279,16 @@ const eliminarPago = async (req, res) => {
       });
     }
 
+        // Restar el monto del EstadoCuenta
+        await EstadoCuenta.findOneAndUpdate(
+          { cotizacion_id: pago.cotizacion_id },
+          { 
+            $pull: { pagos_ids: pago._id },
+            $inc: { pagos_total: -pago.monto_pago },
+          }
+        );
+    
+
     // Verificar si la cotización asociada existe
     const cotizacion = await Cotizacion.findById(pago.cotizacion_id);
     if (!cotizacion) {
@@ -267,6 +297,8 @@ const eliminarPago = async (req, res) => {
         message: 'No se puede eliminar el pago porque la cotización asociada no existe'
       });
     }
+
+
 
     // Eliminar el pago
     await Pago.findByIdAndDelete(req.params.id);

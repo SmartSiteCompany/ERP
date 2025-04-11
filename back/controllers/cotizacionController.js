@@ -59,6 +59,19 @@ const crearCotizacion = async (req, res) => {
     // Guardamos primero para obtener el _id y cálculos automáticos
     await cotizacion.save(); 
 
+        // Crear EstadoCuenta inicial si es financiado
+        if (cotizacion.forma_pago === 'Financiado') {
+          const estadoCuenta = new EstadoCuenta({
+            cliente_id: cotizacion.cliente_id,
+            cotizacion_id: cotizacion._id,
+            saldo_inicial: cotizacion.precio_venta,
+            saldo_actual: cotizacion.precio_venta,
+            pago_semanal: cotizacion.financiamiento.pago_semanal,
+            fecha_vencimiento: cotizacion.financiamiento.fecha_termino
+          });
+          await estadoCuenta.save();
+        }
+
     // Manejo de pago de contado si aplica
     if (cotizacion.forma_pago === 'Contado') {
       const pagoContado = new Pago({

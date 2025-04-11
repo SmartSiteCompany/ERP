@@ -23,6 +23,29 @@ const obtenerEstadoCuentaPorId = async (req, res) => {
   }
 }
 
+// Obtener estado de cuenta por cotización
+const obtenerEstadoPorCotizacion = async (req, res) => {
+  try {
+    const estado = await EstadoCuenta.findOne({ 
+      cotizacion_id: req.params.cotizacion_id 
+    }).populate('pagos_ids');
+    res.json(estado);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Calcular intereses moratorios
+const calcularIntereses = async (req, res) => {
+  const estado = await EstadoCuenta.findById(req.params.id);
+  if (estado.fecha_vencimiento < new Date() && estado.estado !== 'Pagado') {
+    const diasMora = Math.floor((new Date() - estado.fecha_vencimiento) / (1000 * 60 * 60 * 24));
+    estado.intereses_moratorios = diasMora * (estado.saldo_actual * 0.01); // Ej: 1% diario
+    await estado.save();
+  }
+  res.json(estado);
+};
+
 // Crear un nuevo estado de cuenta
 const crearEstadoCuenta = async (req, res) => {
   const estado = new EstadoCuenta(req.body);
@@ -66,6 +89,8 @@ const eliminarEstadoCuenta = async (req, res) => {
 module.exports = {
   obtenerEstadosCuenta,
   obtenerEstadoCuentaPorId,
+  obtenerEstadoPorCotizacion,
+  calcularIntereses,
   crearEstadoCuenta,
   actualizarEstadoCuenta,
   eliminarEstadoCuenta,

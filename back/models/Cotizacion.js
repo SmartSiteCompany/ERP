@@ -151,68 +151,89 @@ const cotizacionSchema = new mongoose.Schema({
 
 // Middleware para cálculos automáticos
 cotizacionSchema.pre('save', async function(next) {
-  // Calcular totales de items
-  this.detalles.forEach(item => {
-    item.inversion = item.costo_materiales + item.costo_mano_obra;
-    // Calcular precio con utilidad si existe
-    item.precio_con_utilidad = item.inversion * (1 + (item.utilidad_esperada || 0)/100);
-  });
-  
-  // Calcular subtotal (suma de precios con utilidad)
-  this.subtotal = this.detalles.reduce((sum, item) => sum + item.precio_con_utilidad, 0);
-  this.iva = this.subtotal * 0.16;
-  this.precio_venta = this.subtotal + this.iva;
-  
-  // Validación de forma de pago
-  if (!['Contado', 'Financiado'].includes(this.forma_pago)) {
-    throw new Error('Forma de pago inválida');
-  }
+  try {
+    // Calcular costos por ítem
+    this.detalles.forEach(item => {
+      item.inversion = item.costo_materiales + item.costo_mano_obra;
+      item.precio_con_utilidad = item.inversion * (1 + (item.utilidad_esperada || 0)/100);
+    });
 
-  // Cálculos para financiamiento
-  if (this.forma_pago === 'Financiado') {
-    // Validar campos requeridos para financiado
-    if (!this.financiamiento?.plazo_semanas || this.financiamiento.plazo_semanas < 0) {
-      throw new Error('Plazo de financiamiento inválido');
-    }
-    
-    // Calcular valores financiamiento
-    const anticipo = this.financiamiento.anticipo_solicitado || 0;
-    this.financiamiento.saldo_restante = this.precio_venta - anticipo;
-    this.financiamiento.pago_semanal = this.financiamiento.saldo_restante / this.financiamiento.plazo_semanas;
-    //this.financiamiento.pago_semanal = this.financiamiento.saldo_restante / this.financiamiento.plazo_semanas;
-    
-    if (anticipo > 0) {
-      const pagoAnticipo = new Pago({
-        cliente_id: this.cliente_id,
-        cotizacion_id: this._id,
-        monto_pago: anticipo,
-        tipo_pago: 'Anticipo',
-        metodo_pago: 'Transferencia',
-        saldo_pendiente: this.financiamiento.saldo_restante, 
-      });
-      await pagoAnticipo.save();
+    // Calcular totales globales 
+    this.subtotal = this.detalles.reduce((sum, item) => sum + item.precio_con_utilidad, 0);
+    this.iva = this.subtotal * 0.16; // IVA del 16%
+    this.precio_venta = this.subtotal + this.iva;
+
+    // Validaciones
+    if (!['Contado', 'Financiado'].includes(this.forma_pago)) {
+      throw new Error('Forma de pago inválida');
     }
 
-    // Calcular fechas si existe fecha de inicio
-    if (this.financiamiento.fecha_inicio) {
-      const fechaTermino = new Date(this.financiamiento.fecha_inicio);
-      fechaTermino.setDate(fechaTermino.getDate() + (this.financiamiento.plazo_semanas * 7));
-      this.financiamiento.fecha_termino = fechaTermino;
+    // Financiamiento con tasa del 34% 
+    if (this.forma_pago === 'Financiado') {
+      // Validaciones
+      if (!this.financiamiento?.plazo_semanas || this.financiamiento.plazo_semanas <= 0) {
+        throw new Error('Plazo de financiamiento inválido (mínimo 1 semana)');
+      }
+
+      // Aplicar tasa del 34% al precio inicial
+      const tasaFinanciamiento = 0.34;
+      const cargoFinanciero = this.precio_venta * tasaFinanciamiento;
+      
+      // Actualizar precio final
+      this.precio_venta += cargoFinanciero;
+      this.cargo_financiero = {
+        tasa: tasaFinanciamiento,
+        monto: cargoFinanciero,
+        descripcion: "Cargo por financiamiento (34%)"
+      };
+
+      // Calcular saldos
+      const anticipo = this.financiamiento.anticipo_solicitado || 0;
+      
+      if (anticipo > this.precio_venta) {
+        throw new Error('El anticipo no puede exceder el precio total');
+      }
+
+      this.financiamiento.saldo_restante = this.precio_venta - anticipo;
+      this.financiamiento.pago_semanal = Number(
+        (this.financiamiento.saldo_restante / this.financiamiento.plazo_semanas).toFixed(2)
+      );
+
+      // Registrar anticipo como primer pago
+      if (anticipo > 0) {
+        const pagoAnticipo = new Pago({
+          cliente_id: this.cliente_id,
+          cotizacion_id: this._id,
+          monto_pago: anticipo,
+          tipo_pago: 'Anticipo',
+          metodo_pago: 'Transferencia',
+          saldo_pendiente: this.financiamiento.saldo_restante
+        });
+        await pagoAnticipo.save();
+      }
+
+      // Calcular fecha de término si existe fecha de inicio
+      if (this.financiamiento.fecha_inicio) {
+        const fechaTermino = new Date(this.financiamiento.fecha_inicio);
+        fechaTermino.setDate(fechaTermino.getDate() + (this.financiamiento.plazo_semanas * 7));
+        this.financiamiento.fecha_termino = fechaTermino;
+      }
+
+      this.pago_contado_id = undefined; // Limpiar referencia a pago de contado
+    } 
+    // Contado
+    else {
+      this.financiamiento = undefined; // Limpiar datos de financiamiento
+      
+      if (this.precio_venta <= 0) {
+        throw new Error('El precio de venta debe ser mayor a cero para pagos de contado');
+      }
     }
-    
-    // Limpiar referencia a pago de contado si existe
-    this.pago_contado_id = undefined;
-  } else {
-    // Si es de contado, limpiar datos de financiamiento
-    this.financiamiento = undefined;
-    
-    // Validar que el precio no sea cero
-    if (this.precio_venta <= 0) {
-      throw new Error('El precio de venta debe ser mayor a cero para pagos de contado');
-    }
+
+    next();
+  } catch (error) {
+    next(error);
   }
-  
-  next();
 });
 
 // Middleware post-save para manejar errores en referencias

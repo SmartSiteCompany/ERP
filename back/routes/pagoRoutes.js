@@ -2,89 +2,67 @@
 const express = require('express');
 const router = express.Router();
 const pagoController = require('../controllers/pagoController');
+const { validarMonto, validarDatosPago } = require('../middlewares/validarPago');
 
 /**
  * @swagger
  * tags:
  *   name: Pagos
- *   description: Endpoints para gestionar pagos de contado y financiados
+ *   description: Gestión de pagos de contado y financiados
  */
 
 /**
  * @swagger
  * /pagos:
  *   get:
- *     summary: Obtener todos los pagos con filtros avanzados
+ *     summary: Obtiene todos los pagos con filtros avanzados
  *     tags: [Pagos]
  *     parameters:
  *       - in: query
  *         name: cotizacion_id
  *         schema:
  *           type: string
- *         description: Filtrar por ID de cotización específica
+ *         description: ID de la cotización asociada
  *       - in: query
  *         name: cliente_id
  *         schema:
  *           type: string
- *         description: Filtrar por ID de cliente específico
+ *         description: ID del cliente
  *       - in: query
  *         name: tipo_pago
  *         schema:
  *           type: string
  *           enum: ['Contado', 'Financiado', 'Anticipo', 'Abono']
- *         description: Filtrar por tipo específico de pago
+ *         description: Tipo de pago
  *       - in: query
  *         name: metodo_pago
  *         schema:
  *           type: string
  *           enum: ['Efectivo', 'Transferencia', 'Tarjeta', 'Cheque']
- *         description: Filtrar por método de pago específico
+ *         description: Método de pago
  *       - in: query
  *         name: fecha_inicio
  *         schema:
  *           type: string
  *           format: date
- *         description: Fecha inicial para rango (YYYY-MM-DD)
+ *         description: Fecha inicial del rango (YYYY-MM-DD)
  *       - in: query
  *         name: fecha_fin
  *         schema:
  *           type: string
  *           format: date
- *         description: Fecha final para rango (YYYY-MM-DD)
- *       - in: query
- *         name: min_monto
- *         schema:
- *           type: number
- *           minimum: 0.01
- *         description: Filtro por monto mínimo
- *       - in: query
- *         name: max_monto
- *         schema:
- *           type: number
- *           minimum: 0.01
- *         description: Filtro por monto máximo
+ *         description: Fecha final del rango (YYYY-MM-DD)
  *     responses:
  *       200:
- *         description: Lista paginada de pagos
+ *         description: Lista de pagos
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 total:
- *                   type: integer
- *                   example: 15
- *                 paginas:
- *                   type: integer
- *                   example: 2
- *                 resultados:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Pago'
- *       400:
- *         description: Parámetros de filtrado inválidos
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Pago'
  *       500:
- *         description: Error interno del servidor
+ *         description: Error del servidor
  */
 router.get('/', pagoController.obtenerPagos);
 
@@ -92,7 +70,7 @@ router.get('/', pagoController.obtenerPagos);
  * @swagger
  * /pagos/{id}:
  *   get:
- *     summary: Obtener detalles completos de un pago específico
+ *     summary: Obtiene un pago específico o el pago de contado de una cotización
  *     tags: [Pagos]
  *     parameters:
  *       - in: path
@@ -100,174 +78,81 @@ router.get('/', pagoController.obtenerPagos);
  *         required: true
  *         schema:
  *           type: string
- *         example: "507f1f77bcf86cd799439011"
+ *         description: ID del pago o de la cotización
  *     responses:
  *       200:
- *         description: Detalles completos del pago
+ *         description: Detalles del pago
  *         content:
  *           application/json:
  *             schema:
- *               allOf:
+ *               oneOf:
  *                 - $ref: '#/components/schemas/Pago'
- *                 - type: object
- *                   properties:
- *                     cotizacion:
- *                       $ref: '#/components/schemas/Cotizacion'
- *                     cliente:
- *                       $ref: '#/components/schemas/Cliente'
+ *                 - $ref: '#/components/schemas/Cotizacion'
  *       404:
- *         description: Pago no encontrado
+ *         description: No encontrado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/:id', pagoController.obtenerPago);
+
+/**
+ * @swagger
+ * /pagos/financiados/{cotizacion_id}:
+ *   get:
+ *     summary: Obtiene los pagos pendientes de una cotización financiada
+ *     tags: [Pagos]
+ *     parameters:
+ *       - in: path
+ *         name: cotizacion_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la cotización financiada
+ *     responses:
+ *       200:
+ *         description: Lista de pagos pendientes
  *         content:
  *           application/json:
- *             example:
- *               error: "No existe pago con el ID especificado"
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Pago'
+ *       500:
+ *         description: Error del servidor
  */
-router.get('/:id', pagoController.obtenerPagoPorId);
+router.get('/financiados/:cotizacion_id', pagoController.obtenerPagosFinanciados);
 
 /**
  * @swagger
  * /pagos:
  *   post:
- *     summary: Registrar un nuevo pago con actualización de saldos
+ *     summary: Registra un nuevo pago
  *     tags: [Pagos]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               cotizacion_id:
- *                 type: string
- *                 description: ID de la cotización asociada (requerido)
- *               cliente_id:
- *                 type: string
- *                 description: ID del cliente (requerido)
- *               monto_pago:
- *                 type: number
- *                 minimum: 0.01
- *                 description: Monto del pago (requerido)
- *               tipo_pago:
- *                 type: string
- *                 enum: ['Contado', 'Financiado', 'Anticipo', 'Abono']
- *                 description: Tipo de pago (requerido)
- *               metodo_pago:
- *                 type: string
- *                 enum: ['Efectivo', 'Transferencia', 'Tarjeta', 'Cheque']
- *                 description: Método de pago (requerido)
- *               referencia:
- *                 type: string
- *                 description: Referencia/folio del pago
- *               observaciones:
- *                 type: string
- *                 description: Notas adicionales
- *             required:
- *               - cotizacion_id
- *               - cliente_id
- *               - monto_pago
- *               - tipo_pago
- *               - metodo_pago
- *           examples:
- *             abonoNormal:
- *               value:
- *                 cotizacion_id: "507f1f77bcf86cd799439011"
- *                 cliente_id: "507f191e810c19729de860ea"
- *                 monto_pago: 1500
- *                 tipo_pago: "Abono"
- *                 metodo_pago: "Transferencia"
- *                 referencia: "TRANS-789456"
- *             pagoContado:
- *               value:
- *                 cotizacion_id: "507f1f77bcf86cd799439012"
- *                 cliente_id: "507f191e810c19729de860eb"
- *                 monto_pago: 5000
- *                 tipo_pago: "Contado"
- *                 metodo_pago: "Efectivo"
+ *             $ref: '#/components/schemas/PagoInput'
  *     responses:
  *       201:
- *         description: Pago registrado con actualización de saldos
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 pago:
- *                   $ref: '#/components/schemas/Pago'
- *                 cotizacionActualizada:
- *                   $ref: '#/components/schemas/Cotizacion'
- *       400:
- *         description: Error de validación
- *         content:
- *           application/json:
- *             examples:
- *               montoInvalido:
- *                 value:
- *                   error: "El monto excede el saldo pendiente"
- *               estadoInvalido:
- *                 value:
- *                   error: "No se pueden registrar pagos en cotizaciones canceladas"
- *       404:
- *         description: Cotización no encontrada
- */
-router.post('/', pagoController.crearPago);
-
-/**
- * @swagger
- * /pagos/{id}:
- *   put:
- *     summary: Actualizar información de un pago existente
- *     tags: [Pagos]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               monto_pago:
- *                 type: number
- *                 minimum: 0.01
- *                 description: Nuevo monto (solo incrementos permitidos)
- *               metodo_pago:
- *                 type: string
- *                 enum: ['Efectivo', 'Transferencia', 'Tarjeta', 'Cheque']
- *               referencia:
- *                 type: string
- *               observaciones:
- *                 type: string
- *           example:
- *             metodo_pago: "Tarjeta"
- *             referencia: "TARJ-456123"
- *             observaciones: "Cambio de método de pago"
- *     responses:
- *       200:
- *         description: Pago actualizado correctamente
+ *         description: Pago creado exitosamente
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Pago'
  *       400:
- *         description: Operación no permitida
- *         content:
- *           application/json:
- *             example:
- *               error: "No se puede reducir el monto de un pago registrado"
- *       404:
- *         description: Pago no encontrado
+ *         description: Datos inválidos
+ *       500:
+ *         description: Error del servidor
  */
-router.put('/:id', pagoController.actualizarPago);
+router.post('/', validarDatosPago, validarMonto, pagoController.crearPago);
 
 /**
  * @swagger
  * /pagos/{id}:
- *   delete:
- *     summary: Eliminar un pago (solo si es el más reciente)
+ *   put:
+ *     summary: Actualiza un pago existente
  *     tags: [Pagos]
  *     parameters:
  *       - in: path
@@ -275,9 +160,45 @@ router.put('/:id', pagoController.actualizarPago);
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID del pago
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/PagoUpdate'
  *     responses:
  *       200:
- *         description: Pago eliminado y saldos reajustados
+ *         description: Pago actualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Pago'
+ *       400:
+ *         description: Datos inválidos
+ *       404:
+ *         description: Pago no encontrado
+ *       500:
+ *         description: Error del servidor
+ */
+router.put('/:id', validarMonto, pagoController.actualizarPago);
+
+/**
+ * @swagger
+ * /pagos/{id}:
+ *   delete:
+ *     summary: Elimina un pago
+ *     tags: [Pagos]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del pago
+ *     responses:
+ *       200:
+ *         description: Pago eliminado
  *         content:
  *           application/json:
  *             schema:
@@ -285,17 +206,49 @@ router.put('/:id', pagoController.actualizarPago);
  *               properties:
  *                 message:
  *                   type: string
- *                 saldoActualizado:
- *                   type: number
- *       403:
- *         description: Eliminación no permitida
- *         content:
- *           application/json:
- *             example:
- *               error: "Solo se puede eliminar el pago más reciente"
  *       404:
  *         description: Pago no encontrado
+ *       500:
+ *         description: Error del servidor
  */
 router.delete('/:id', pagoController.eliminarPago);
+
+/**
+ * @swagger
+ * /pagos/debitar/{pago_id}:
+ *   put:
+ *     summary: Debita un pago financiado pendiente
+ *     tags: [Pagos]
+ *     parameters:
+ *       - in: path
+ *         name: pago_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del pago pendiente
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               metodo_pago:
+ *                 type: string
+ *                 enum: ['Efectivo', 'Transferencia', 'Tarjeta', 'Cheque']
+ *                 default: 'Transferencia'
+ *     responses:
+ *       200:
+ *         description: Pago debitado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Pago'
+ *       400:
+ *         description: Pago no disponible para debitar
+ *       500:
+ *         description: Error del servidor
+ */
+router.put('/debitar/:pago_id', pagoController.debitarPagoFinanciado);
 
 module.exports = router;

@@ -7,7 +7,8 @@ const swaggerOptions = {
     info: {
       title: "API Documentation",
       version: "1.0.0",
-      description: "Documentación de la API para el sistema de gestión de clientes y filiales."
+      description:
+        "Documentación de la API para el sistema de gestión de clientes y filiales."
     },
     servers: [{ url: "http://localhost:8000" }],
     components: {
@@ -30,17 +31,17 @@ const swaggerOptions = {
             area: { type: "string" }
           }
         },
-        
+
         // Filial
         Filial: {
           type: "object",
           properties: {
-            nombre_filial: { 
+            nombre_filial: {
               type: "string",
               description: "Nombre de la filial",
               example: "DataX"
             },
-            descripcion_filial: { 
+            descripcion_filial: {
               type: "string",
               description: "Descripción de la filial",
               example: "Sucursal de desarrollo de software"
@@ -48,7 +49,7 @@ const swaggerOptions = {
           },
           required: ["nombre_filial", "descripcion_filial"]
         },
-        
+
         // FilialResponse (para respuestas GET que incluyen el ID)
         FilialResponse: {
           type: "object",
@@ -58,17 +59,17 @@ const swaggerOptions = {
               description: "ID único de la filial",
               example: "507f1f77bcf86cd799439011"
             },
-            nombre_filial: { 
+            nombre_filial: {
               type: "string",
               description: "Nombre de la filial"
             },
-            descripcion_filial: { 
+            descripcion_filial: {
               type: "string",
               description: "Descripción de la filial"
             }
           }
         },
-        
+
         // Password Reset
         PasswordReset: {
           type: "object",
@@ -77,7 +78,7 @@ const swaggerOptions = {
             token: { type: "string" }
           }
         },
-        
+
         // Pago (actualizado para referenciar cotización en lugar de servicio)
         Pago: {
           type: "object",
@@ -107,12 +108,13 @@ const swaggerOptions = {
               type: "number",
               minimum: 0.01,
               description: "Monto del pago en moneda local",
-              example: 1500.50
+              example: 1500.5
             },
             saldo_pendiente: {
               type: "number",
-              description: "Saldo restante después de este pago (calculado automáticamente)",
-              example: 3500.00
+              description:
+                "Saldo restante después de este pago (calculado automáticamente)",
+              example: 3500.0
             },
             tipo_pago: {
               type: "string",
@@ -128,13 +130,26 @@ const swaggerOptions = {
             },
             referencia: {
               type: "string",
-              description: "Identificador único proporcionado por el medio de pago",
+              description:
+                "Identificador único proporcionado por el medio de pago",
               example: "TRANS-789456"
             },
             observaciones: {
               type: "string",
               description: "Notas adicionales sobre el pago",
               example: "Pago correspondiente a la semana 3"
+            },
+            estado: {
+              type: "string",
+              enum: ["Pendiente", "Completado"],
+              description: "Estado del pago",
+              example: "Completado"
+            },
+            fecha_estimada: {
+              type: "string",
+              format: "date-time",
+              description: "Fecha estimada para pagos pendientes",
+              example: "2023-11-01T00:00:00Z"
             },
             createdAt: {
               type: "string",
@@ -157,7 +172,7 @@ const swaggerOptions = {
             "metodo_pago"
           ]
         },
-        
+
         // Estado de cuenta
         EstadoCuenta: {
           type: "object",
@@ -211,7 +226,7 @@ const swaggerOptions = {
             "total_a_pagar"
           ]
         },
-        
+
         // Cotización (actualizada para incluir servicio financiado)
         Cotizacion: {
           type: "object",
@@ -239,7 +254,13 @@ const swaggerOptions = {
             },
             estado: {
               type: "string",
-              enum: ["Borrador", "Enviada", "Aprobada", "Completada", "Cancelada"],
+              enum: [
+                "Borrador",
+                "Enviada",
+                "Aprobada",
+                "Completada",
+                "Cancelada"
+              ],
               default: "Borrador",
               description: "Estado del flujo de cotización"
             },
@@ -298,7 +319,8 @@ const swaggerOptions = {
             subtotal: {
               type: "number",
               readOnly: true,
-              description: "Subtotal antes de impuestos (calculado automáticamente)",
+              description:
+                "Subtotal antes de impuestos (calculado automáticamente)",
               example: 15000
             },
             iva: {
@@ -357,7 +379,8 @@ const swaggerOptions = {
                 fecha_termino: {
                   type: "string",
                   format: "date-time",
-                  description: "Fecha estimada de término (calculada automáticamente)"
+                  description:
+                    "Fecha estimada de término (calculada automáticamente)"
                 }
               }
             },
@@ -461,7 +484,7 @@ const swaggerOptions = {
             "metodo_pago"
           ]
         },
-        
+
         // Cliente
         Cliente: {
           type: "object",
@@ -502,7 +525,7 @@ const swaggerOptions = {
             "tipo_cliente"
           ]
         },
-        
+
         // ChangeLog
         ChangeLog: {
           type: "object",
@@ -545,7 +568,7 @@ const swaggerOptions = {
             "responsable"
           ]
         },
-        
+
         Campana: {
           type: "object",
           properties: {
@@ -584,7 +607,7 @@ const swaggerOptions = {
             "estado"
           ]
         },
-        
+
         // Documento
         Documento: {
           type: "object",
@@ -612,7 +635,7 @@ const swaggerOptions = {
           },
           required: ["cliente_id", "nombre", "tipo", "archivo"]
         },
-        
+
         // Evento
         Evento: {
           type: "object",
@@ -637,7 +660,7 @@ const swaggerOptions = {
           },
           required: ["nombre", "descripcion", "fecha", "ubicacion"]
         },
-        
+
         // Feedback
         Feedback: {
           type: "object",
@@ -665,7 +688,7 @@ const swaggerOptions = {
           },
           required: ["cliente_id", "comentario", "calificacion"]
         },
-        
+
         // Interacción
         Interaccion: {
           type: "object",
@@ -706,7 +729,7 @@ const swaggerOptions = {
             "responsable"
           ]
         },
-        
+
         // Nota
         Nota: {
           type: "object",
@@ -726,7 +749,7 @@ const swaggerOptions = {
           },
           required: ["cliente_id", "contenido", "autor"]
         },
-        
+
         // Oportunidad
         Oportunidad: {
           type: "object",
@@ -767,7 +790,7 @@ const swaggerOptions = {
             "responsable"
           ]
         },
-        
+
         // Segmentacion
         Segmentacion: {
           type: "object",
@@ -796,7 +819,7 @@ const swaggerOptions = {
           },
           required: ["nombre", "descripcion", "criterios"]
         },
-        
+
         // Tarea
         Tarea: {
           type: "object",

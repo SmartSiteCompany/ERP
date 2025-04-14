@@ -42,7 +42,14 @@ const cors = require('cors');
 app.use(cors({ origin: 'http://localhost:3000' })); 
 
 // Configuración de Swagger
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use('/api-docs', 
+  swaggerUi.serve, 
+  swaggerUi.setup(swaggerSpec, {
+    explorer: true, // Para habilitar la búsqueda
+    customSiteTitle: "API Cotizaciones", // Título personalizado
+    customCss: '.swagger-ui .topbar { display: none }' // Opcional: personalización CSS
+  })
+);
 
 // Rutas
 app.use("/auth", authRoutes);

@@ -96,7 +96,7 @@ const cotizacionSchema = new mongoose.Schema({
   forma_pago: { 
     type: String, 
     enum: ['Contado', 'Financiado'], 
-    required: true,
+    required: false,
     description: "Tipo de pago/contrato" 
   },
 

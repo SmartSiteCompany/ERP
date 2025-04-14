@@ -1,5 +1,5 @@
 const Pago = require('../models/Pago');
-const { logError } = require('../utils/logger');
+const { logError } = require('../utils/loger');
 
 class PaymentService {
   /**

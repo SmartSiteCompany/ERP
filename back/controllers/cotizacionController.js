@@ -3,7 +3,7 @@ const Cotizacion = require('../models/Cotizacion');
 const Pago = require('../models/Pago');
 const EstadoCuenta = require('../models/EstadoCuenta');
 const { generarPagosFinanciados } = require('./pagoController');
-const { PaymentService } = require('../services/PaymentService');
+const { PaymentService } = require('../services/PaymetService');
 
 // Operaciones CRUD básicas para cotizaciones
 const obtenerCotizaciones = async (req, res) => {

@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 
 const filialSchema = new mongoose.Schema({
-  nombre_filial: { type: String, enum:['DataX','StudioDesign','GeneralSystech','SmartSite'], required: true },
+  nombre_filial: { type: String, required: true },
   descripcion_filial: { type: String, default: '' }
 }, { timestamps: true });
 

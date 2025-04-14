@@ -1,3 +1,4 @@
+// src/controllers/cotizacionController.js
 const Cotizacion = require('../models/Cotizacion');
 const Pago = require('../models/Pago');
 const EstadoCuenta = require('../models/EstadoCuenta');
@@ -104,7 +105,7 @@ const crearCotizacion = async (req, res) => {
 };
 
 // Funciones auxiliares para manejo de pagos
-const handlePagoContado = async (cotizacion, body) => {
+const handlePagoContado = async (cotizacion, body, Pago) => {
   const pagoContado = new Pago({
     cliente_id: cotizacion.cliente_id,
     cotizacion_id: cotizacion._id,

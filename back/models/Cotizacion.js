@@ -201,7 +201,7 @@ cotizacionSchema.pre('save', async function(next) {
 
       // Registrar anticipo como primer pago
       if (anticipo > 0) {
-        const pagoAnticipo = new Pago({
+        const pagoAnticipo = new mongoose.model('Pago')({
           cliente_id: this.cliente_id,
           cotizacion_id: this._id,
           monto_pago: anticipo,

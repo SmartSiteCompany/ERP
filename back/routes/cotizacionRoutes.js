@@ -3,10 +3,17 @@ const express = require('express');
 const router = express.Router();
 const cotizacionController = require('../controllers/cotizacionController');
 const pdfController = require('../controllers/pdfController');
+const { validatePaymentMethod } = require('../middlewares/paymentValidation');
 
 router.get('/', cotizacionController.obtenerCotizaciones);
 router.get('/:id', cotizacionController.obtenerCotizacionPorId);
 router.post('/', cotizacionController.crearCotizacion);
+// Ruta para crear cotizaciones
+router.post(
+    '/cotizaciones', 
+    validatePaymentMethod, // Nuevo middleware
+    cotizacionController.crearCotizacion
+  );
 router.put('/:id', cotizacionController.actualizarCotizacion);
 router.delete('/:id', cotizacionController.eliminarCotizacion);
 // ==============================================

@@ -163,14 +163,14 @@ cotizacionSchema.pre('save', async function(next) {
     this.iva = this.subtotal * 0.16; // IVA del 16%
     this.precio_venta = this.subtotal + this.iva;
 
-    // Validaciones
+    // Validaciones básicas
     if (!['Contado', 'Financiado'].includes(this.forma_pago)) {
       throw new Error('Forma de pago inválida');
     }
 
     // Financiamiento con tasa del 34% 
     if (this.forma_pago === 'Financiado') {
-      // Validaciones
+      // Validaciones específicas de financiamiento
       if (!this.financiamiento?.plazo_semanas || this.financiamiento.plazo_semanas <= 0) {
         throw new Error('Plazo de financiamiento inválido (mínimo 1 semana)');
       }
@@ -199,18 +199,15 @@ cotizacionSchema.pre('save', async function(next) {
         (this.financiamiento.saldo_restante / this.financiamiento.plazo_semanas).toFixed(2)
       );
 
-      // Registrar anticipo como primer pago
-      if (anticipo > 0) {
-        const pagoAnticipo = new mongoose.model('Pago')({
-          cliente_id: this.cliente_id,
-          cotizacion_id: this._id,
-          monto_pago: anticipo,
-          tipo_pago: 'Anticipo',
-          metodo_pago: 'Transferencia',
-          saldo_pendiente: this.financiamiento.saldo_restante
-        });
-        await pagoAnticipo.save();
-      }
+      // PREPARAR datos para pago inicial (se creará en el controlador)
+      this._pagoInicial = {
+        monto: anticipo,
+        tipo_pago: 'Anticipo',
+        saldo_pendiente: this.financiamiento.saldo_restante
+      };
+
+      // Limpiar referencia a pago de contado
+      this.pago_contado_id = undefined;
 
       // Calcular fecha de término si existe fecha de inicio
       if (this.financiamiento.fecha_inicio) {
@@ -218,16 +215,23 @@ cotizacionSchema.pre('save', async function(next) {
         fechaTermino.setDate(fechaTermino.getDate() + (this.financiamiento.plazo_semanas * 7));
         this.financiamiento.fecha_termino = fechaTermino;
       }
-
-      this.pago_contado_id = undefined; // Limpiar referencia a pago de contado
     } 
     // Contado
     else {
-      this.financiamiento = undefined; // Limpiar datos de financiamiento
-      
+      // Validación para pago de contado
       if (this.precio_venta <= 0) {
         throw new Error('El precio de venta debe ser mayor a cero para pagos de contado');
       }
+
+      // Limpiar datos de financiamiento
+      this.financiamiento = undefined;
+      
+      // PREPARAR datos para pago de contado (se creará en el controlador)
+      this._pagoInicial = {
+        monto: this.precio_venta,
+        tipo_pago: 'Contado',
+        saldo_pendiente: 0
+      };
     }
 
     next();

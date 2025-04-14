@@ -25,7 +25,7 @@ const pagoSchema = new mongoose.Schema({
   },
   saldo_pendiente: { 
     type: Number, 
-    required: true,
+    required: false,
     description: "Saldo restante después de este pago" 
   },
   tipo_pago: {
@@ -37,7 +37,7 @@ const pagoSchema = new mongoose.Schema({
   metodo_pago: {
     type: String,
     enum: ['Efectivo', 'Transferencia', 'Tarjeta', 'Cheque'],
-    required: true,
+    required: false,
     description: "Método de pago utilizado"
   },
   referencia: {

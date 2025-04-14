@@ -3,6 +3,7 @@ const Cotizacion = require('../models/Cotizacion');
 const Pago = require('../models/Pago');
 const EstadoCuenta = require('../models/EstadoCuenta');
 const { generarPagosFinanciados } = require('./pagoController');
+const { PaymentService } = require('../services/PaymentService');
 
 // Operaciones CRUD básicas para cotizaciones
 const obtenerCotizaciones = async (req, res) => {
@@ -61,47 +62,82 @@ const crearCotizacion = async (req, res) => {
       });
     }
 
+    // Validar método de pago para financiamiento
+    if (req.body.forma_pago === 'Financiado' && !req.body.metodo_pago) {
+      return res.status(400).json({
+        error: 'Datos incompletos',
+        message: 'Método de pago es requerido para financiamiento'
+      });
+    }
+
+    // Preparar datos de la cotización
     const cotizacionData = {
       ...req.body,
       vendedor: req.body.vendedor || req.user?.nombre || 'Sistema'
     };
 
+    // Crear y guardar la cotización
     const cotizacion = new Cotizacion(cotizacionData);
     await cotizacion.save();
 
     // Manejo de pagos según tipo
     if (cotizacion.forma_pago === 'Contado') {
-      await handlePagoContado(cotizacion, req.body);
-    } else if (cotizacion.forma_pago === 'Financiado') {
+      await PaymentService.createPayment({
+        cliente_id: cotizacion.cliente_id,
+        cotizacion_id: cotizacion._id,
+        monto_pago: cotizacion.precio_venta,
+        tipo_pago: 'Contado',
+        metodo_pago: req.body.metodo_pago || 'Efectivo',
+        saldo_pendiente: 0
+      });
+    } 
+    else if (cotizacion.forma_pago === 'Financiado') {
+      // Crear pago inicial (anticipo)
+      await PaymentService.createInitialPayment(cotizacion, req.body.metodo_pago);
+      
+      // Generar estado de cuenta y pagos programados
       await handleFinanciamiento(cotizacion);
     }
 
-    const cotizacionCreada = await Cotizacion.findById(cotizacion._id)
-      .populate('cliente_id', 'nombre email telefono')
-      .populate('filial_id', 'nombre_filial direccion')
-      .populate('pago_contado_id', 'monto_pago metodo_pago fecha_pago')
-
-      .populate({
-        path: 'financiamiento.pago_id',
-        select: 'monto_pago fecha_pago estado'
-      });
+    // Obtener cotización completa con relaciones
+    const cotizacionCreada = await obtenerCotizacionCompleta(cotizacion._id);
 
     res.status(201).json({
       message: 'Cotización creada exitosamente',
       cotizacion: cotizacionCreada,
-      pago_contado: cotizacion.forma_pago === 'Contado' ? {
+      [cotizacion.forma_pago === 'Contado' ? 'pago_contado' : 'pago_inicial']: {
         realizado: true,
-        monto: cotizacion.precio_venta
-      } : { realizado: false }
+        monto: cotizacion.forma_pago === 'Contado' 
+          ? cotizacion.precio_venta 
+          : cotizacion.financiamiento?.anticipo_solicitado || 0
+      }
     });
 
   } catch (error) {
-    res.status(400).json({ 
-      error: 'Error al crear la cotización',
-      details: error.message,
-      validationErrors: error.errors
-    });
+    handleError(res, error, 'Error al crear la cotización');
   }
+};
+
+// Función auxiliar para obtener cotización con relaciones
+const obtenerCotizacionCompleta = async (cotizacionId) => {
+  return Cotizacion.findById(cotizacionId)
+    .populate('cliente_id', 'nombre email telefono')
+    .populate('filial_id', 'nombre_filial direccion')
+    .populate('pago_contado_id', 'monto_pago metodo_pago fecha_pago')
+    .populate({
+      path: 'financiamiento.pagos',
+      select: 'monto_pago fecha_pago estado'
+    });
+};
+
+// Función para manejo de errores consistente
+const handleError = (res, error, defaultMessage) => {
+  const statusCode = error.name === 'ValidationError' ? 400 : 500;
+  res.status(statusCode).json({ 
+    error: defaultMessage,
+    details: error.message,
+    ...(error.errors && { validationErrors: error.errors })
+  });
 };
 
 // Funciones auxiliares para manejo de pagos

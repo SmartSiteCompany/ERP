@@ -31,7 +31,12 @@ const obtenerCotizacionPorId = async (req, res) => {
     const cotizacion = await Cotizacion.findById(req.params.id)
       .populate('cliente_id', 'nombre email telefono')
       .populate('filial_id', 'nombre_filial direccion')
-      .populate('pago_contado_id', 'monto_pago metodo_pago fecha_pago');
+      .populate('pago_contado_id', 'monto_pago metodo_pago fecha_pago')
+
+      .populate({
+        path: 'financiamiento.pago_id',
+        Selection: 'monto_pago metodo_pago fecha_pago'
+      });
       
     if (!cotizacion) {
       return res.status(404).json({ error: 'Cotización no encontrada' });
@@ -73,7 +78,12 @@ const crearCotizacion = async (req, res) => {
     const cotizacionCreada = await Cotizacion.findById(cotizacion._id)
       .populate('cliente_id', 'nombre email telefono')
       .populate('filial_id', 'nombre_filial direccion')
-      .populate('pago_contado_id', 'monto_pago metodo_pago fecha_pago');
+      .populate('pago_contado_id', 'monto_pago metodo_pago fecha_pago')
+
+      .populate({
+        path: 'financiamiento.pago_id',
+        select: 'monto_pago fecha_pago estado'
+      });
 
     res.status(201).json({
       message: 'Cotización creada exitosamente',
@@ -124,6 +134,49 @@ const handleFinanciamiento = async (cotizacion) => {
 
   // Generar pagos futuros
   await generarPagosFinanciados(cotizacion._id);
+};
+
+// Función para generar pagos financiados (debe estar en pagoController.js)
+const generarPagosFinanciados = async (cotizacion) => {
+  const pagos = [];
+  const { plazo_semanas, pago_semanal, anticipo_solicitado } = cotizacion.financiamiento;
+
+  // 1. Registrar anticipo si existe
+  if (anticipo_solicitado > 0) {
+    const pagoAnticipo = new Pago({
+      cliente_id: cotizacion.cliente_id,
+      cotizacion_id: cotizacion._id,
+      monto_pago: anticipo_solicitado,
+      tipo_pago: 'Anticipo',
+      metodo_pago: 'Transferencia',
+      estado: 'Completado',
+      fecha_pago: new Date()
+    });
+    await pagoAnticipo.save();
+    pagos.push(pagoAnticipo._id);
+  }
+
+  // 2. Generar pagos semanales programados
+  for (let i = 1; i <= plazo_semanas; i++) {
+    const fechaPago = new Date();
+    fechaPago.setDate(fechaPago.getDate() + (i * 7)); // Sumar i semanas
+    
+    const pagoProgramado = new Pago({
+      cliente_id: cotizacion.cliente_id,
+      cotizacion_id: cotizacion._id,
+      monto_pago: pago_semanal,
+      tipo_pago: 'Abono',
+      estado: 'Pendiente',
+      fecha_estimada: fechaPago
+    });
+    
+    await pagoProgramado.save();
+    pagos.push(pagoProgramado._id);
+  }
+
+  // Actualizar cotización con referencias a los pagos
+  cotizacion.financiamiento.pagos_ids = pagos;
+  await cotizacion.save();
 };
 
 const aprobarCotizacion = async (req, res) => {
@@ -429,5 +482,6 @@ module.exports = {
   registrarPago,
   obtenerHistorialPagos,
   obtenerServiciosPorEstado,
-  verificarCotizacion
+  verificarCotizacion,
+  generarPagosFinanciados
 };

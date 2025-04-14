@@ -31,7 +31,7 @@ const pagoSchema = new mongoose.Schema({
   tipo_pago: {
     type: String,
     enum: ['Contado', 'Financiado', 'Anticipo', 'Abono'],
-    required: true,
+    required: false,
     description: "Tipo de pago realizado"
   },
   metodo_pago: {

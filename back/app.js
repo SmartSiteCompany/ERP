@@ -13,7 +13,7 @@ const campanaRoutes = require("./routes/campanaRoutes");
 const cotizacionRoutes = require("./routes/cotizacionRoutes");
 const pagoRoutes = require("./routes/pagoRoutes");
 const estadoCuentaRoutes = require("./routes/estadoCuentaRoutes");
-const pdfRoutes = require('./routes/pdfRoutes'); 
+//const pdfRoutes = require('./routes/pdfRoutes'); 
 const eventoRoutes = require('./routes/eventoRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
 const interaccionRoutes = require('./routes/interaccionRoutes');
@@ -54,7 +54,7 @@ app.use("/clientes", clienteRoutes);
 app.use("/cotizaciones", cotizacionRoutes);
 app.use("/pagos", pagoRoutes);
 app.use("/estados-cuenta", estadoCuentaRoutes);
-app.use('/api', pdfRoutes);
+//app.use('/api', pdfRoutes);
 app.use('/eventos', eventoRoutes);
 app.use('/feedbacks', feedbackRoutes);
 app.use('/interacciones', interaccionRoutes);
@@ -63,7 +63,7 @@ app.use('/oportunidades', oportunidadRoutes);
 app.use('/segmentaciones', segmentacionRoutes);
 app.use('/tareas', tareaRoutes);
 app.use('/documentos', documentRoutes);
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+//app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 
 // Rutas protegidas

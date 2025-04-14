@@ -406,6 +406,17 @@ const obtenerServiciosPorEstado = async (req, res) => {
   }
 };
 
+const verificarCotizacion = async (req, res, next) => {
+  try {
+    const cotizacion = await Cotizacion.findById(req.params.id);
+    if (!cotizacion) return res.status(404).json({ error: 'Cotización no encontrada' });
+    req.cotizacion = cotizacion; // Pasamos la cotización al siguiente middleware
+    next();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   obtenerCotizaciones,
   obtenerCotizacionPorId,
@@ -417,5 +428,6 @@ module.exports = {
   completarServicio,
   registrarPago,
   obtenerHistorialPagos,
-  obtenerServiciosPorEstado
+  obtenerServiciosPorEstado,
+  verificarCotizacion
 };

@@ -12,9 +12,9 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true, unique: true },
   filial_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Filial', required: true },
   bloqueo: { type: String, default: 'activo' },
-  foto_user: { type: String, default: 'uploads/users/' },
+  foto_user: { type: String, default: 'uploads/users' },
   rol_user: { type: String, default: 'usuario' },
-  remember_token: { type: String, default: '' },
+  remember_token: { type: String, default: 'uploads/tokens' },
 }, { timestamps: true });
 
 // Encriptar la contraseña antes de guardar el usuario

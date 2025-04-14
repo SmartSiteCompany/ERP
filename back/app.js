@@ -63,6 +63,8 @@ app.use('/oportunidades', oportunidadRoutes);
 app.use('/segmentaciones', segmentacionRoutes);
 app.use('/tareas', tareaRoutes);
 app.use('/documentos', documentRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // Rutas protegidas
 app.use("/users", userRoutes);

@@ -43,6 +43,24 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
+// Filtro personalizado para imágenes (usuarios)
+const imageFilter = (req, file, cb) => {
+  if (allowedImageTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Solo se permiten imágenes JPEG o PNG'), false);
+  }
+};
+
+// Filtro personalizado para documentos
+const docFilter = (req, file, cb) => {
+  if (allowedDocTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Solo se permiten archivos PDF'), false);
+  }
+};
+
 // Middlewares de Multer
 const uploadUser = multer({ 
   storage: storageUser,

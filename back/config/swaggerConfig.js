@@ -1,4 +1,7 @@
+const { triggerAsyncId } = require('async_hooks');
+const path = require('path');
 const swaggerJsdoc = require('swagger-jsdoc');
+
 
 const swaggerOptions = {
   definition: {
@@ -8,6 +11,22 @@ const swaggerOptions = {
       version: '1.0.0',
       description: 'Documentación completa del sistema',
     },
+    tags: [
+      { name: 'Autenticación', description: 'Operaciones de autenticación' },
+      { name: 'Cotizaciones', description: 'Operaciones relacionadas con cotizaciones' },
+      { name: 'Clientes', description: 'Operaciones relacionadas con clientes' },
+      { name: 'Pagos', description: 'Operaciones relacionadas con pagos' },
+      { name: 'Estados de Cuenta', description: 'Operaciones relacionadas con estados de cuenta' },
+      { name: 'Documentos', description: 'Operaciones relacionadas con documentos' },
+      { name: 'Eventos', description: 'Operaciones relacionadas con eventos' },
+      { name: 'Interacciones', description: 'Operaciones relacionadas con interacciones' },
+      { name: 'Notas', description: 'Operaciones relacionadas con notas' },
+      { name: 'Oportunidades', description: 'Operaciones relacionadas con oportunidades de venta' },
+      { name: 'Segmentaciones', description: 'Operaciones relacionadas con segmentaciones de clientes' },
+      { name: 'Tareas', description: 'Operaciones relacionadas con tareas' },
+      { name: 'Filiales', description: 'Operaciones relacionadas con filiales' },
+      { name: 'Feedbacks', description: 'Operaciones relacionadas con feedbacks de clientes' }
+    ],
     components: {
       schemas: {
         // ==================== AUTENTICACIÓN ====================
@@ -276,9 +295,9 @@ const swaggerOptions = {
     },
     security: [{ BearerAuth: [] }]
   },
-  apis: ['./src/routes/*.js']
+  apis: [ path.resolve(__dirname, '../routes/*.js') ], // Ruta a los archivos de rutas
 };
 
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
 module.exports = swaggerSpec;

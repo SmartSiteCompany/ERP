@@ -11,7 +11,6 @@ const { validatePaymentMethod } = require('../middlewares/paymentValidation');
  *   name: Cotizaciones
  *   description: Gestión de cotizaciones y servicios
  */
-
 /**
  * @swagger
  * /api/cotizaciones:
@@ -95,7 +94,6 @@ router.get('/:id', cotizacionController.obtenerCotizacionPorId);
  *             schema:
  *               $ref: '#/components/schemas/ErrorValidacion'
  */
-
 router.post( // Ruta para cotizaciones
     '/', 
     validatePaymentMethod, // Nuevo middleware
@@ -185,10 +183,10 @@ router.put('/:id', cotizacionController.actualizarCotizacion);
  *                   example: 2
  */
 router.delete('/:id', cotizacionController.eliminarCotizacion);
+
 // ==============================================
 // Operaciones de Servicios
 // ==============================================
-
 /**
  * @swagger
  * /api/cotizaciones/{id}/activar:
@@ -336,7 +334,6 @@ router.get('/servicios/:estado', cotizacionController.obtenerServiciosPorEstado)
 // ==============================================
 // Operaciones de Pagos (para servicios financiados)
 // ==============================================
-
 /**
  * @swagger
  * /api/cotizaciones/{id}/pagos:
@@ -389,7 +386,6 @@ router.post('/:id/pagos', cotizacionController.registrarPago);
  */
 router.get('/:id/pagos', cotizacionController.obtenerHistorialPagos);
 
-// Generador de PDFs
 /**
  * @swagger
  * /api/cotizaciones/{id}/pdf:
@@ -414,4 +410,5 @@ router.get('/:id/pagos', cotizacionController.obtenerHistorialPagos);
  *         description: Cotización no encontrada
  */
 router.get('/:id/pdf', cotizacionController.verificarCotizacion, pdfController.generarPDFCotizacion);
+
 module.exports = router;

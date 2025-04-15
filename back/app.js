@@ -44,7 +44,7 @@ app.use(cors({ origin: 'http://localhost:3000' }));
 // Configuración de Swagger
 app.use('/api-docs', 
   swaggerUi.serve, 
-  swaggerUi.setup(swaggerSpec, {
+  swaggerUi.setup(swaggerDocs, {
     explorer: true, // Para habilitar la búsqueda
     customSiteTitle: "API Cotizaciones", // Título personalizado
     customCss: '.swagger-ui .topbar { display: none }' // Opcional: personalización CSS

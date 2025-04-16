@@ -1,5 +1,5 @@
 
-import { todoReducer } from "../../src/08-useReducer/todoReducer"
+import { todoReducer } from "../../src/ToDoList/todoReducer"
 
 
 describe('Pruebas en todoReducer', () => {

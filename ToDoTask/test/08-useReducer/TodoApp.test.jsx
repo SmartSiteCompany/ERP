@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react"
-import { TodoApp } from '../../src/08-useReducer/TodoApp'
+import { TodoApp,  } from '../../src/ToDoList/index'
 import { useTodo } from "../../src/hook/useTodo"
 
 // Un mock permite simular el comportamiento de una función real durante las pruebas,

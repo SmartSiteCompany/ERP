@@ -1,11 +1,12 @@
-const { body } = require('express-validator');
+const { body, validationResult } = require('express-validator');
 
 exports.validatePaymentMethod = [
   body('forma_pago').isIn(['Contado', 'Financiado']),
   body('metodo_pago')
     .if(body('forma_pago').equals('Financiado'))
     .notEmpty()
-    .isIn(['Efectivo', 'Transferencia', 'Tarjeta', 'Cheque']),
+    .withMessage('Método de pago es requerido para financiamiento')
+    .isIn(['Efectivo', 'Transferencia', 'Tarjeta']),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

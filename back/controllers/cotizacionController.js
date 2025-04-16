@@ -1,9 +1,30 @@
 // src/controllers/cotizacionController.js
 const Cotizacion = require('../models/Cotizacion');
-const Pago = require('../models/Pago');
 const EstadoCuenta = require('../models/EstadoCuenta');
-const { generarPagosFinanciados } = require('./pagoController');
-const { PaymentService } = require('../services/PaymetService');
+const Pago = require('../models/Pago');
+const PaymentService = require('../services/PaymetService');
+
+// Función para manejo de errores consistente
+const handleError = (res, error, defaultMessage) => {
+  const statusCode = error.name === 'ValidationError' ? 400 : 500;
+  res.status(statusCode).json({ 
+    error: defaultMessage,
+    details: error.message,
+    ...(error.errors && { validationErrors: error.errors })
+  });
+};
+
+// Función auxiliar para obtener cotización con relaciones
+const obtenerCotizacionCompleta = async (cotizacionId) => {
+  return Cotizacion.findById(cotizacionId)
+    .populate('cliente_id', 'nombre email telefono')
+    .populate('filial_id', 'nombre_filial direccion')
+    .populate('pago_contado_id', 'monto_pago metodo_pago fecha_pago')
+    .populate({
+      path: 'financiamiento.pagos',
+      select: 'monto_pago fecha_pago estado'
+    });
+};
 
 // Operaciones CRUD básicas para cotizaciones
 const obtenerCotizaciones = async (req, res) => {
@@ -21,10 +42,7 @@ const obtenerCotizaciones = async (req, res) => {
 
     res.json(cotizaciones);
   } catch (error) {
-    res.status(500).json({ 
-      error: 'Error al obtener cotizaciones',
-      details: error.message 
-    });
+    handleError(res, error, 'Error al obtener cotizaciones');
   }
 };
 
@@ -34,10 +52,9 @@ const obtenerCotizacionPorId = async (req, res) => {
       .populate('cliente_id', 'nombre email telefono')
       .populate('filial_id', 'nombre_filial direccion')
       .populate('pago_contado_id', 'monto_pago metodo_pago fecha_pago')
-
       .populate({
-        path: 'financiamiento.pago_id',
-        Selection: 'monto_pago metodo_pago fecha_pago'
+        path: 'financiamiento.pagos',
+        select: 'monto_pago fecha_pago estado'
       });
       
     if (!cotizacion) {
@@ -45,10 +62,7 @@ const obtenerCotizacionPorId = async (req, res) => {
     }
     res.json(cotizacion);
   } catch (error) {
-    res.status(500).json({ 
-      error: 'Error al obtener la cotización',
-      details: error.message 
-    });
+    handleError(res, error, 'Error al obtener la cotización');
   }
 };
 
@@ -63,11 +77,19 @@ const crearCotizacion = async (req, res) => {
     }
 
     // Validar método de pago para financiamiento
-    if (req.body.forma_pago === 'Financiado' && !req.body.metodo_pago) {
-      return res.status(400).json({
-        error: 'Datos incompletos',
-        message: 'Método de pago es requerido para financiamiento'
-      });
+    if (req.body.forma_pago === 'Financiado') {
+      if (!req.body.metodo_pago) {
+        return res.status(400).json({
+          error: 'Datos incompletos',
+          message: 'Método de pago es requerido para financiamiento'
+        });
+      }
+      if (!req.body.financiamiento) {
+        return res.status(400).json({
+          error: 'Datos incompletos',
+          message: 'Datos de financiamiento son requeridos'
+        });
+      }
     }
 
     // Preparar datos de la cotización
@@ -88,15 +110,22 @@ const crearCotizacion = async (req, res) => {
         monto_pago: cotizacion.precio_venta,
         tipo_pago: 'Contado',
         metodo_pago: req.body.metodo_pago || 'Efectivo',
-        saldo_pendiente: 0
+        saldo_pendiente: 0,
+        referencia: `CONTADO-${cotizacion._id.toString().slice(-6)}`
       });
-    } 
-    else if (cotizacion.forma_pago === 'Financiado') {
+    } else if (cotizacion.forma_pago === 'Financiado') {
       // Crear pago inicial (anticipo)
       await PaymentService.createInitialPayment(cotizacion, req.body.metodo_pago);
       
-      // Generar estado de cuenta y pagos programados
-      await handleFinanciamiento(cotizacion);
+      // Crear estado de cuenta
+      await EstadoCuenta.create({
+        cliente_id: cotizacion.cliente_id,
+        cotizacion_id: cotizacion._id,
+        saldo_inicial: cotizacion.precio_venta,
+        saldo_actual: cotizacion.precio_venta,
+        pago_semanal: cotizacion.financiamiento.pago_semanal,
+        fecha_vencimiento: cotizacion.financiamiento.fecha_termino
+      });
     }
 
     // Obtener cotización completa con relaciones
@@ -118,61 +147,6 @@ const crearCotizacion = async (req, res) => {
   }
 };
 
-// Función auxiliar para obtener cotización con relaciones
-const obtenerCotizacionCompleta = async (cotizacionId) => {
-  return Cotizacion.findById(cotizacionId)
-    .populate('cliente_id', 'nombre email telefono')
-    .populate('filial_id', 'nombre_filial direccion')
-    .populate('pago_contado_id', 'monto_pago metodo_pago fecha_pago')
-    .populate({
-      path: 'financiamiento.pagos',
-      select: 'monto_pago fecha_pago estado'
-    });
-};
-
-// Función para manejo de errores consistente
-const handleError = (res, error, defaultMessage) => {
-  const statusCode = error.name === 'ValidationError' ? 400 : 500;
-  res.status(statusCode).json({ 
-    error: defaultMessage,
-    details: error.message,
-    ...(error.errors && { validationErrors: error.errors })
-  });
-};
-
-// Funciones auxiliares para manejo de pagos
-const handlePagoContado = async (cotizacion, body, Pago) => {
-  const pagoContado = new Pago({
-    cliente_id: cotizacion.cliente_id,
-    cotizacion_id: cotizacion._id,
-    monto_pago: cotizacion.precio_venta,
-    tipo_pago: 'Contado',
-    metodo_pago: body.metodo_pago || 'Efectivo',
-    saldo_pendiente: 0,
-    referencia: body.referencia_pago || `CONTADO-${cotizacion._id.toString().slice(-6)}`
-  });
-  
-  await pagoContado.save();
-  cotizacion.pago_contado_id = pagoContado._id;
-  await cotizacion.save();
-};
-
-const handleFinanciamiento = async (cotizacion) => {
-  // Crear Estado de Cuenta
-  const estadoCuenta = new EstadoCuenta({
-    cliente_id: cotizacion.cliente_id,
-    cotizacion_id: cotizacion._id,
-    saldo_inicial: cotizacion.precio_venta,
-    saldo_actual: cotizacion.precio_venta,
-    pago_semanal: cotizacion.financiamiento.pago_semanal,
-    fecha_vencimiento: cotizacion.financiamiento.fecha_termino
-  });
-  await estadoCuenta.save();
-
-  // Generar pagos futuros
-  await generarPagosFinanciados(cotizacion._id);
-};
-
 const aprobarCotizacion = async (req, res) => {
   try {
     const cotizacion = await Cotizacion.findByIdAndUpdate(
@@ -186,15 +160,12 @@ const aprobarCotizacion = async (req, res) => {
     }
 
     if (cotizacion.forma_pago === 'Financiado') {
-      await generarPagosFinanciados(cotizacion._id);
+      await PaymentService.generateScheduledPayments(cotizacion._id);
     }
 
     res.json(cotizacion);
   } catch (error) {
-    res.status(500).json({ 
-      error: 'Error al aprobar cotización',
-      details: error.message 
-    });
+    handleError(res, error, 'Error al aprobar cotización');
   }
 };
 
@@ -229,10 +200,7 @@ const actualizarCotizacion = async (req, res) => {
     
     res.json(cotizacion);
   } catch (error) {
-    res.status(400).json({ 
-      error: 'Error al actualizar cotización',
-      details: error.message 
-    });
+    handleError(res, error, 'Error al actualizar cotización');
   }
 };
 
@@ -251,14 +219,11 @@ const eliminarCotizacion = async (req, res) => {
     }
     
     await Cotizacion.findByIdAndDelete(req.params.id);
-    await Pago.deleteMany({ cotizacion_id: cotizacion._id });
+    await PaymentService.deletePaymentsByQuotation(cotizacion._id);
     
     res.json({ message: 'Cotización eliminada correctamente' });
   } catch (error) {
-    res.status(500).json({ 
-      error: 'Error al eliminar cotización',
-      details: error.message 
-    });
+    handleError(res, error, 'Error al eliminar cotización');
   }
 };
 
@@ -298,10 +263,7 @@ const activarServicio = async (req, res) => {
       
     res.json(cotizacionActualizada);
   } catch (error) {
-    res.status(500).json({ 
-      error: 'Error al activar servicio',
-      details: error.message 
-    });
+    handleError(res, error, 'Error al activar servicio');
   }
 };
 
@@ -334,10 +296,7 @@ const completarServicio = async (req, res) => {
     
     res.json(cotizacion);
   } catch (error) {
-    res.status(500).json({ 
-      error: 'Error al completar servicio',
-      details: error.message 
-    });
+    handleError(res, error, 'Error al completar servicio');
   }
 };
 
@@ -368,15 +327,14 @@ const registrarPago = async (req, res) => {
       });
     }
     
-    const pago = new Pago({
+    const pago = await PaymentService.createPayment({
       cotizacion_id: cotizacion._id,
       cliente_id: cotizacion.cliente_id,
-      monto,
+      monto_pago: monto,
       metodo_pago: metodo_pago || 'Efectivo',
-      fecha: new Date()
+      tipo_pago: 'Abono',
+      fecha_pago: new Date()
     });
-    
-    await pago.save();
     
     // Actualizar saldo en la cotización
     cotizacion.financiamiento.saldo_restante -= monto;
@@ -395,10 +353,7 @@ const registrarPago = async (req, res) => {
       pago
     });
   } catch (error) {
-    res.status(500).json({ 
-      error: 'Error al registrar pago',
-      details: error.message 
-    });
+    handleError(res, error, 'Error al registrar pago');
   }
 };
 
@@ -409,8 +364,7 @@ const obtenerHistorialPagos = async (req, res) => {
       return res.status(404).json({ error: 'Cotización no encontrada' });
     }
 
-    const pagos = await Pago.find({ cotizacion_id: req.params.id })
-      .sort({ fecha: -1 });
+    const pagos = await PaymentService.getPaymentsByQuotation(req.params.id);
       
     res.json({
       cotizacion: {
@@ -422,10 +376,7 @@ const obtenerHistorialPagos = async (req, res) => {
       pagos
     });
   } catch (error) {
-    res.status(500).json({ 
-      error: 'Error al obtener historial de pagos',
-      details: error.message 
-    });
+    handleError(res, error, 'Error al obtener historial de pagos');
   }
 };
 
@@ -446,21 +397,20 @@ const obtenerServiciosPorEstado = async (req, res) => {
     
     res.json(cotizaciones);
   } catch (error) {
-    res.status(500).json({ 
-      error: 'Error al obtener servicios por estado',
-      details: error.message 
-    });
+    handleError(res, error, 'Error al obtener servicios por estado');
   }
 };
 
 const verificarCotizacion = async (req, res, next) => {
   try {
     const cotizacion = await Cotizacion.findById(req.params.id);
-    if (!cotizacion) return res.status(404).json({ error: 'Cotización no encontrada' });
-    req.cotizacion = cotizacion; // Pasamos la cotización al siguiente middleware
+    if (!cotizacion) {
+      return res.status(404).json({ error: 'Cotización no encontrada' });
+    }
+    req.cotizacion = cotizacion;
     next();
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    handleError(res, error, 'Error al verificar cotización');
   }
 };
 

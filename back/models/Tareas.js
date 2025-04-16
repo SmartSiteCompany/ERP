@@ -8,8 +8,7 @@ const tareaSchema = new mongoose.Schema({
   descripcion: { type: String, required: true },
   fecha_creacion: { type: Date, default: Date.now, required: true },
   fecha_vencimiento: { type: Date, default: Date.now, required: true },
-  estado: { type: String, enum: ['pendiente', 'en progreso', 'completada'], default: 'pendiente' },
-  responsable: { type: String, required: true },
+  estado: { type: String, enum: ['pendiente', 'en progreso', 'completada'], default: 'pendiente' }
 });
 
 module.exports = mongoose.model('Tarea', tareaSchema);

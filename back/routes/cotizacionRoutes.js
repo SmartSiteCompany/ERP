@@ -1,31 +1,42 @@
-// src/routes/cotizacionRoutes.js
 const express = require('express');
 const router = express.Router();
 const cotizacionController = require('../controllers/cotizacionController');
-const pdfController = require('../controllers/pdfController');
-const { validatePaymentMethod } = require('../middlewares/paymentValidation');
+const { 
+  validateCreatePayment,
+  validateUpdatePayment,
+  validateQueryPayments,
+  validateDeletePayment
+} = require('../middlewares/paymentValidation');
+const { verificarCotizacion } = require('../controllers/cotizacionController');
 
 /**
  * @swagger
  * tags:
  *   name: Cotizaciones
- *   description: Gestión de cotizaciones y servicios
+ *   description: Gestión completa de cotizaciones
  */
+
+// ==============================================
+// Operaciones CRUD Básicas
+// ==============================================
+
 /**
  * @swagger
  * /api/cotizaciones:
  *   get:
- *     summary: Obtener todas las cotizaciones
+ *     summary: Obtener todas las cotizaciones (con filtros)
  *     tags: [Cotizaciones]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: query
  *         name: estado
  *         schema:
  *           type: string
  *           enum: [Borrador, Enviada, Aprobada, Completada, Cancelada]
- *         description: Filtrar por estado
+ *       - in: query
+ *         name: forma_pago
+ *         schema:
+ *           type: string
+ *           enum: [Contado, Financiado]
  *     responses:
  *       200:
  *         description: Lista de cotizaciones
@@ -36,13 +47,16 @@ const { validatePaymentMethod } = require('../middlewares/paymentValidation');
  *               items:
  *                 $ref: '#/components/schemas/Cotizacion'
  */
-router.get('/', cotizacionController.obtenerCotizaciones);
+router.get('/', 
+  validateQueryPayments, 
+  cotizacionController.obtenerCotizaciones
+);
 
 /**
  * @swagger
  * /api/cotizaciones/{id}:
  *   get:
- *     summary: Obtener una cotización por ID
+ *     summary: Obtener cotización por ID con detalles completos
  *     tags: [Cotizaciones]
  *     parameters:
  *       - in: path
@@ -50,55 +64,47 @@ router.get('/', cotizacionController.obtenerCotizaciones);
  *         required: true
  *         schema:
  *           type: string
- *         example: "507f1f77bcf86cd799439011"
  *     responses:
  *       200:
- *         description: Detalles completos de la cotización
+ *         description: Cotización encontrada
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Cotizacion'
+ *               $ref: '#/components/schemas/CotizacionCompleta'
  *       404:
  *         description: Cotización no encontrada
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorAPI'
  */
-
-router.get('/:id', cotizacionController.obtenerCotizacionPorId);
+router.get('/:id', 
+  verificarCotizacion,
+  cotizacionController.obtenerCotizacionPorId
+);
 
 /**
  * @swagger
  * /api/cotizaciones:
  *   post:
- *     summary: Crear nueva cotización
+ *     summary: Crear nueva cotización (con manejo de pagos automático)
  *     tags: [Cotizaciones]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Cotizacion'
+ *             $ref: '#/components/schemas/NuevaCotizacion'
  *     responses:
  *       201:
- *         description: Cotización creada exitosamente
+ *         description: Cotización creada con pagos asociados
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Cotizacion'
+ *               $ref: '#/components/schemas/CotizacionCreada'
  *       400:
  *         description: Error de validación
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorValidacion'
  */
-router.post( // Ruta para cotizaciones
-    '/', 
-    validatePaymentMethod, // Nuevo middleware
-    cotizacionController.crearCotizacion
-  );
+router.post('/',
+  validateCreatePayment,
+  cotizacionController.crearCotizacion
+);
 
 /**
  * @swagger
@@ -117,76 +123,47 @@ router.post( // Ruta para cotizaciones
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Cotizacion'
+ *             $ref: '#/components/schemas/ActualizarCotizacion'
  *     responses:
  *       200:
  *         description: Cotización actualizada
- *       404:
- *         description: Cotización no encontrada
+ *       400:
+ *         description: No se puede modificar una cotización completada
  */
-router.put('/:id', cotizacionController.actualizarCotizacion);
+router.put('/:id',
+  verificarCotizacion,
+  validateUpdatePayment,
+  cotizacionController.actualizarCotizacion
+);
 
 /**
  * @swagger
  * /api/cotizaciones/{id}:
  *   delete:
- *     summary: Eliminar una cotización
+ *     summary: Eliminar cotización (solo si está en estado Pendiente)
  *     tags: [Cotizaciones]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         example: "507f1f77bcf86cd799439011"
- *         description: ID de la cotización a eliminar
  *     responses:
  *       200:
- *         description: Cotización eliminada correctamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 mensaje:
- *                   type: string
- *                   example: "Cotización eliminada exitosamente"
- *                 cotizacion_id:
- *                   type: string
- *                   example: "507f1f77bcf86cd799439011"
- *       403:
- *         description: No autorizado (solo administradores o creadores pueden eliminar)
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorAPI'
- *       404:
- *         description: Cotización no encontrada
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorAPI'
- *       409:
- *         description: Conflicto (no se puede eliminar cotización con pagos registrados)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "No se puede eliminar cotización con pagos asociados"
- *                 pagos_existentes:
- *                   type: integer
- *                   example: 2
+ *         description: Cotización eliminada
+ *       400:
+ *         description: No se puede eliminar cotización con servicios activos
  */
-router.delete('/:id', cotizacionController.eliminarCotizacion);
+router.delete('/:id',
+  verificarCotizacion,
+  validateDeletePayment,
+  cotizacionController.eliminarCotizacion
+);
 
 // ==============================================
 // Operaciones de Servicios
 // ==============================================
+
 /**
  * @swagger
  * /api/cotizaciones/{id}/activar:
@@ -201,110 +178,35 @@ router.delete('/:id', cotizacionController.eliminarCotizacion);
  *           type: string
  *     responses:
  *       200:
- *         description: Servicio activado correctamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 mensaje:
- *                   type: string
- *                   example: "Servicio activado"
- *                 fecha_inicio:
- *                   type: string
- *                   format: date-time
+ *         description: Servicio activado con fechas actualizadas
  */
-router.post('/:id/activar', cotizacionController.activarServicio);
+router.post('/:id/activar',
+  verificarCotizacion,
+  cotizacionController.activarServicio
+);
 
 /**
  * @swagger
  * /api/cotizaciones/{id}/completar:
  *   post:
  *     summary: Marcar servicio como completado
- *     description: Actualiza el estado de un servicio asociado a una cotización a "Completado" y registra la fecha de finalización
  *     tags: [Cotizaciones]
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         example: "507f1f77bcf86cd799439011"
- *         description: ID de la cotización asociada al servicio
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - observaciones
- *             properties:
- *               observaciones:
- *                 type: string
- *                 example: "Instalación terminada según lo acordado"
- *               fecha_fin_real:
- *                 type: string
- *                 format: date-time
- *                 example: "2023-08-15T14:30:00Z"
- *               evaluacion_servicio:
- *                 type: integer
- *                 minimum: 1
- *                 maximum: 5
- *                 example: 5
  *     responses:
  *       200:
- *         description: Servicio marcado como completado
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 mensaje:
- *                   type: string
- *                   example: "Servicio completado exitosamente"
- *                 cotizacion_id:
- *                   type: string
- *                   example: "507f1f77bcf86cd799439011"
- *                 nuevo_estado:
- *                   type: string
- *                   example: "Completada"
- *                 fecha_fin_servicio:
- *                   type: string
- *                   format: date-time
+ *         description: Servicio completado con éxito
  *       400:
- *         description: Error en la solicitud
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorAPI'
- *       404:
- *         description: Cotización no encontrada o servicio no activo
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "El servicio no está activo"
- *       409:
- *         description: Conflicto en el estado actual
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "El servicio ya estaba completado"
- *                 estado_actual:
- *                   type: string
- *                   example: "Completado"
+ *         description: No se puede completar con saldo pendiente
  */
-router.post('/:id/completar', cotizacionController.completarServicio);
+router.post('/:id/completar',
+  verificarCotizacion,
+  cotizacionController.completarServicio
+);
 
 /**
  * @swagger
@@ -322,18 +224,15 @@ router.post('/:id/completar', cotizacionController.completarServicio);
  *     responses:
  *       200:
  *         description: Lista de servicios filtrados
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Cotizacion'
  */
-router.get('/servicios/:estado', cotizacionController.obtenerServiciosPorEstado);
+router.get('/servicios/:estado',
+  cotizacionController.obtenerServiciosPorEstado
+);
 
 // ==============================================
-// Operaciones de Pagos (para servicios financiados)
+// Operaciones de Pagos
 // ==============================================
+
 /**
  * @swagger
  * /api/cotizaciones/{id}/pagos:
@@ -351,22 +250,22 @@ router.get('/servicios/:estado', cotizacionController.obtenerServiciosPorEstado)
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Pago'
+ *             $ref: '#/components/schemas/NuevoPago'
  *     responses:
  *       201:
- *         description: Pago registrado exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/EstadoCuenta'
+ *         description: Pago registrado y saldos actualizados
  */
-router.post('/:id/pagos', cotizacionController.registrarPago);
+router.post('/:id/pagos',
+  verificarCotizacion,
+  validateCreatePayment,
+  cotizacionController.registrarPago
+);
 
 /**
  * @swagger
  * /api/cotizaciones/{id}/pagos:
  *   get:
- *     summary: Obtener historial de pagos
+ *     summary: Obtener historial de pagos de cotización
  *     tags: [Cotizaciones]
  *     parameters:
  *       - in: path
@@ -376,39 +275,11 @@ router.post('/:id/pagos', cotizacionController.registrarPago);
  *           type: string
  *     responses:
  *       200:
- *         description: Lista de pagos asociados
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Pago'
+ *         description: Historial de pagos con resumen
  */
-router.get('/:id/pagos', cotizacionController.obtenerHistorialPagos);
-
-/**
- * @swagger
- * /api/cotizaciones/{id}/pdf:
- *   get:
- *     summary: Generar PDF de cotización
- *     tags: [Cotizaciones]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: PDF generado exitosamente
- *         content:
- *           application/pdf:
- *             schema:
- *               type: string
- *               format: binary
- *       404:
- *         description: Cotización no encontrada
- */
-router.get('/:id/pdf', cotizacionController.verificarCotizacion, pdfController.generarPDFCotizacion);
+router.get('/:id/pagos',
+  verificarCotizacion,
+  cotizacionController.obtenerHistorialPagos
+);
 
 module.exports = router;

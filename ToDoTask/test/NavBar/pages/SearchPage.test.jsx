@@ -35,16 +35,16 @@ describe('Pruebas en <SearchPage />', () => {
     test('debe de mostrar a Batman y el input con el valor del queryString', () => {
         
         render(
-            <MemoryRouter initialEntries={['/search?q=batman']}>
+            <MemoryRouter initialEntries={['/search?q=Demo']}>
                 <SearchPage />
             </MemoryRouter>
         );
         
         const input = screen.getByRole('textbox');
-        expect( input.value ).toBe('batman');
+        expect( input.value ).toBe('Demo');
         
         const img = screen.getByRole('img');
-        expect( img.src ).toContain('/assets/heroes/dc-batman.jpg');
+        expect( img.src ).toContain('/assets/heroes/cliente.jpg');
 
         const alert = screen.getByLabelText('alert-danger');
         expect( alert.style.display ).toBe('none');
@@ -54,7 +54,7 @@ describe('Pruebas en <SearchPage />', () => {
     test('debe de mostrar un error si no se encuentra el cliente (DEMO123)', () => {
         
         render(
-            <MemoryRouter initialEntries={['/search?q=batman123']}>
+            <MemoryRouter initialEntries={['/search?q=cliente1']}>
                 <SearchPage />
             </MemoryRouter>
         );
@@ -67,7 +67,7 @@ describe('Pruebas en <SearchPage />', () => {
 
     test('debe de llamar el navigate a la pantalla nueva', () => {
         
-        const inputValue = 'superman';
+        const inputValue = 'Ruben';
 
         render(
             <MemoryRouter initialEntries={['/search']}>

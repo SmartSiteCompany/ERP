@@ -13,7 +13,7 @@ describe('Pruebas en <AppRouter />', () => {
         };
 
         render(
-            <MemoryRouter initialEntries={['/marvel']}>
+            <MemoryRouter initialEntries={['/inicio']}>
                 <AuthContext.Provider value={contextValue}>
                     <AppRouter/>
                 </AuthContext.Provider>
@@ -33,7 +33,7 @@ describe('Pruebas en <AppRouter />', () => {
     };
 
     render(
-        <MemoryRouter initialEntries={['/marvel']}>
+        <MemoryRouter initialEntries={['/inicio']}>
             <AuthContext.Provider value={contextValue}>
                 <AppRouter/>
             </AuthContext.Provider>
@@ -41,5 +41,5 @@ describe('Pruebas en <AppRouter />', () => {
     );
 
     // Verificar que al menos un elemento con marvel exista lamenos una vez
-    expect(screen.getAllByText('marvel')).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('inicio')).toBeGreaterThanOrEqual(1);
 });

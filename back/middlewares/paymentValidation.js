@@ -1,5 +1,5 @@
 // src/middlewares/paymentValidation.js
-const { body, param, query } = require('express-validator');
+const { body, param, query, validationResult } = require('express-validator');
 const Cotizacion = require('../models/Cotizacion');
 const { tiposPago, metodosPago } = require('../utils/constantes');
 
@@ -199,3 +199,4 @@ exports.validateDeletePayment = [
     next();
   }
 ];
+
